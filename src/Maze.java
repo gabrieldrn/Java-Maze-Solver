@@ -13,7 +13,6 @@ public class Maze
 	public int lMax;
 	public int cMax;
 	public char[] order = {'N', 'E', 'S', 'W'}; //Shift order in the grid during solving in cardinals
-	public LinkedList<Square> closedNodes;
 	
 	boolean fancyMode;
 	
@@ -46,8 +45,6 @@ public class Maze
 		this.setStart(start);
 		
 		this.currState = this.getStart();
-		
-		this.closedNodes = new LinkedList<Square>();
 		//At this point, the grid is and stay the inital Maze unsolved.
 	}
 	
@@ -104,13 +101,21 @@ public class Maze
 			this.assignMazeToGridSquares();
 			
 			this.currState = this.getStart();
-			
-			this.closedNodes = new LinkedList<Square>();
 		}
 		catch (FileNotFoundException e) 
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	public Maze(Square[][] grid, Square start, Square end, Square currState, int lMax, int cMax) 
+	{
+		this.grid = grid;
+		this.start = start;
+		this.end = end;
+		this.currState = currState;
+		this.lMax = lMax;
+		this.cMax = cMax;
 	}
 	
 	/*
@@ -172,7 +177,6 @@ public class Maze
 	public void setNextState(Square c)
 	{
 		this.grid[this.currState.getLine()][this.currState.getCol()].setAttribute("*");
-		this.closedNodes.add(this.currState);
 		this.currState = c;
 	}
 	
@@ -193,6 +197,13 @@ public class Maze
 	public void initMaze()
 	{
 		//Init grid
+		this.resetGrid();
+		
+		this.currState = this.getStart();
+	}
+	
+	public void resetGrid()
+	{
 		for(int i = 0; i < this.lMax; i++)
 		{
 			for(int j = 0; j < this.cMax; j++)
@@ -201,8 +212,6 @@ public class Maze
 					this.grid[i][j].setAttribute(" ");
 			}
 		}
-		
-		this.currState = this.getStart();
 	}
 	
 	/*
@@ -224,18 +233,6 @@ public class Maze
 	{
 		char[] no = {'N', 'E', 'S', 'W'}; 
 		this.order = no;
-	}
-	
-	/*
-	 * Returns all the closed nodes in a string
-	 */
-	public String printClosedNodes()
-	{
-		String res = "Closed nodes : \n";
-		for(int i = 0; i < this.closedNodes.size(); i++)
-			res += "(" + i + ") " + this.closedNodes.get(i).toString() + "\n";
-		
-		return res;
 	}
 
 	/*
@@ -260,6 +257,11 @@ public class Maze
 	public boolean unicodeIsTheNewBlack()
 	{
 		return this.fancyMode;
+	}
+	
+	public Maze clone()
+	{
+		return new Maze(this.grid, this.start, this.end, this.currState, this.lMax, this.cMax);
 	}
 
 	/*
@@ -346,8 +348,13 @@ public class Maze
 				{
 					if(temp.getLine() == this.currState.getLine() && temp.getCol() == this.currState.getCol())
 						res += " o ";
+					else if (temp.getLine() == this.start.getLine() && temp.getCol() == this.start.getCol())
+						res += " S ";
+					else if (temp.getLine() == this.end.getLine() && temp.getCol() == this.end.getCol())
+						res += " E ";
 					else
 						res += " " + temp.getAttribute() + " ";
+					
 					
 					if(l < this.lMax - 1)
 					{

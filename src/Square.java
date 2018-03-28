@@ -1,4 +1,5 @@
 import java.lang.Math;
+import java.util.LinkedList;
 
 public class Square
 {
@@ -99,58 +100,58 @@ public class Square
 	 * 
 	 * c: The origin Square from where to get the next squares
 	 */
-	public Maze[] getNextsFromOpen()
+	public LinkedList<Maze> getNexts()
 	{
-		Maze[] nexts = new Maze[4];
+		LinkedList<Maze> nexts = new LinkedList<Maze>();
 		String test = "Suivants : ";
 		
 		for(int i = 0; i < 4; i++)
 		{
-			switch(this.maze.order[i])
+			Maze tempMaze = this.maze.clone();
+			
+			if(this.maze.order[i] == 'N')
 			{
-				case 'N':
-					if(!this.maze.closedNodes.contains(this.getNorth()) && this.getNorth() != null)
-					{
-						System.out.println(this.getNorth().toString());
-						test += "N ";
-						Maze tempMaze = this.maze;
-						tempMaze.setNextState(this.getNorth());
-						nexts[i] = tempMaze;
-					}
-					break;
+				if(this.getNorth() != null && !this.getNorth().isWall())
+				{
+					System.out.println(this.getNorth().toString() + " (N): ");
+					test += "N ";
 					
-				case 'E':
-					if(!this.maze.closedNodes.contains(this.getEast()) && this.getEast() != null)
-					{
-						System.out.println(this.getEast().toString());
-						test += "E ";
-						Maze tempMaze = this.maze;
-						tempMaze.setNextState(this.getEast());
-						nexts[i] = tempMaze;
-					}
-					break;
+					tempMaze.setNextState(this.getNorth());
+					nexts.push(tempMaze);
+				}
+			}
+			else if (this.maze.order[i] == 'E')
+			{
+				if(this.getEast() != null && !this.getEast().isWall())
+				{
+					System.out.println(this.getEast().toString() + " (E): ");
+					test += "E ";
 					
-				case 'S': 
-					if(!this.maze.closedNodes.contains(this.getSouth()) && this.getSouth() != null)
-					{
-						System.out.println(this.getSouth().toString());
-						test += "S ";
-						Maze tempMaze = this.maze;
-						tempMaze.setNextState(this.getSouth());
-						nexts[i] = tempMaze;
-					}
-					break;
+					tempMaze.setNextState(this.getEast());
+					nexts.push(tempMaze);
+				}
+			}
+			else if (this.maze.order[i] == 'S')
+			{
+				if(this.getSouth() != null && !this.getSouth().isWall())
+				{
+					System.out.println(this.getSouth().toString() + " (S): ");
+					test += "S ";
 					
-				case 'W': 
-					if(!this.maze.closedNodes.contains(this.getWest()) && this.getWest() != null)
-					{
-						System.out.println(this.getWest().toString());
-						test += "W ";
-						Maze tempMaze = this.maze;
-						tempMaze.setNextState(this.getWest());
-						nexts[i] = tempMaze;
-					}
-					break;
+					tempMaze.setNextState(this.getSouth());
+					nexts.push(tempMaze);
+				}
+			}
+			else if (this.maze.order[i] == 'W')
+			{
+				if(this.getWest() != null && !this.getWest().isWall())
+				{
+					System.out.println(this.getWest().toString() + " (W): ");
+					test += "W ";
+					
+					tempMaze.setNextState(this.getWest());
+					nexts.push(tempMaze);
+				}
 			}
 		}
 		System.out.println(test);

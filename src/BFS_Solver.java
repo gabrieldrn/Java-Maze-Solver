@@ -5,6 +5,7 @@ public class BFS_Solver
 	private Maze maze;
 	private String result;
 	LinkedList<Node<Maze>> frontier;
+	LinkedList<Square> closedNodes;
 	private int nodesCounter;
 	private int pathLength;
 	
@@ -17,6 +18,7 @@ public class BFS_Solver
 		this.maze = m;
 		this.result = "";
 		this.frontier = new LinkedList<Node<Maze>>();
+		this.closedNodes = new LinkedList<Square>();
 	}
 	
 	/*
@@ -29,7 +31,7 @@ public class BFS_Solver
 		this.pathLength = 0;
 		
 		//Init maze
-		this.maze.closedNodes.clear();
+		this.closedNodes.clear();
 		this.maze.initMaze();
 		
 		//Init frontier
@@ -47,12 +49,16 @@ public class BFS_Solver
 			
 			else
 			{
-				System.out.println(this.maze.printMaze());
-				
 				Node<Maze> current = this.frontier.removeFirst(); //Get first node from the frontier
 				this.maze = (Maze) current.getContent(); //Get maze from the node
-				//System.out.println(this.maze.toString());
 				Square currState = this.maze.getCurrState(); //Get current state from the maze
+				
+				System.out.println(this.maze.printMaze());
+				
+				if(current.getFather() != null)
+					System.out.println(current.getFather().toString());
+				else
+					System.out.println("Pas de père pour current");
 				
 				if(currState.getLine() == this.maze.getEnd().getLine() && currState.getCol() == this.maze.getEnd().getCol())
 				{
@@ -65,16 +71,29 @@ public class BFS_Solver
 				else
 				{
 					LinkedList<Node<Maze>> nexts = this.getNextSquares(); //Get next possible states
+					this.closedNodes.add(currState);
 					
 					//Set fathers
 					for(int i = 0; i < nexts.size(); i++)
 					{
 						Node<Maze> temp = new Node<Maze>(nexts.get(i).getContent());
+						
+						System.out.println(temp.toString());
+						System.out.println(current.toString());
+						
 						temp.setFather(current); //Set current as father for all next states
+						
+						System.out.println(temp.getFather().toString());
+						if(temp.getFather().getFather() != null)
+							System.out.println(temp.getFather().getFather().toString());
+						else
+							System.out.println("Pas de grand-père pour temp");
 						this.nodesCounter++;
 					}
 					
 					this.frontier.addAll(nexts); //Add all next squares into the frontier
+					if(frontier.get(0).getFather() != null)
+						System.out.println(frontier.get(0).getFather().toString());
 				}
 				
 				System.out.println(this.frontier);
@@ -84,6 +103,32 @@ public class BFS_Solver
 		long endTime = System.currentTimeMillis();
 		
 		this.setResult(endfound, (endTime - startTime));
+	}
+	
+	/*
+	 * Get the next ("walkables") states from the given state
+	 * c: Square from where to get the nexts squares
+	 */
+	public LinkedList<Node<Maze>> getNextSquares()
+	{
+		LinkedList<Node<Maze>> res = new LinkedList<Node<Maze>>();
+		
+		//Get 4 next squares
+		LinkedList<Maze> nexts = this.maze.getCurrState().getNexts();
+		
+		for(int i = 0; i < nexts.size(); i++)
+		{
+			Square tempSq = nexts.get(i).getCurrState();
+			if(!this.closedNodes.contains(tempSq))
+			{
+				this.closedNodes.add(tempSq);
+				this.maze.getGrid()[tempSq.getLine()][tempSq.getCol()].setAttribute("*");
+				Node<Maze> tempNode = new Node<Maze>(nexts.get(i));
+				res.add(tempNode); //Add the state
+			}
+		}
+		
+		return res;
 	}
 	
 	/*
@@ -105,9 +150,8 @@ public class BFS_Solver
 		
 		if(success)
 		{
-			this.maze.initMaze();
+			this.maze.resetGrid();
 			Node<Maze> revertedTree = this.frontier.removeLast();
-			
 			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
 			revertedTree = revertedTree.getFather();
 			this.pathLength++;
@@ -136,26 +180,6 @@ public class BFS_Solver
 	}
 	
 	/*
-	 * Get the next ("walkables") states from the given state
-	 * c: Square from where to get the nexts squares
-	 */
-	public LinkedList<Node<Maze>> getNextSquares()
-	{
-		LinkedList<Node<Maze>> res = new LinkedList<Node<Maze>>();
-		
-		//Get 4 next squares
-		Maze[] nexts = this.maze.getCurrState().getNextsFromOpen();
-		
-		for(Maze s : nexts)
-		{
-			Node<Maze> temp = new Node<Maze>(s);
-			res.add(temp); //Add the state
-		}
-		
-		return res;
-	}
-	
-	/*
 	 * Returns the result from the last solving
 	 */
 	public String getResult()
@@ -164,6 +188,18 @@ public class BFS_Solver
 			return "No resolution computed, please use BFS_Solver.solve() first";
 		else
 			return this.result;
+	}
+	
+	/*
+	 * Returns all the closed nodes in a string
+	 */
+	public String printClosedNodes()
+	{
+		String res = "Closed nodes : \n";
+		for(int i = 0; i < this.closedNodes.size(); i++)
+			res += "(" + i + ") " + this.closedNodes.get(i).toString() + "\n";
+		
+		return res;
 	}
 	
 	/*
