@@ -103,7 +103,6 @@ public class Square
 	public LinkedList<Maze> getNexts()
 	{
 		LinkedList<Maze> nexts = new LinkedList<Maze>();
-		String test = "Suivants : ";
 		
 		for(int i = 0; i < 4; i++)
 		{
@@ -113,9 +112,6 @@ public class Square
 			{
 				if(this.getNorth() != null && !this.getNorth().isWall())
 				{
-					System.out.println(this.getNorth().toString() + " (N): ");
-					test += "N ";
-					
 					tempMaze.setNextState(this.getNorth());
 					nexts.push(tempMaze);
 				}
@@ -124,9 +120,6 @@ public class Square
 			{
 				if(this.getEast() != null && !this.getEast().isWall())
 				{
-					System.out.println(this.getEast().toString() + " (E): ");
-					test += "E ";
-					
 					tempMaze.setNextState(this.getEast());
 					nexts.push(tempMaze);
 				}
@@ -135,9 +128,6 @@ public class Square
 			{
 				if(this.getSouth() != null && !this.getSouth().isWall())
 				{
-					System.out.println(this.getSouth().toString() + " (S): ");
-					test += "S ";
-					
 					tempMaze.setNextState(this.getSouth());
 					nexts.push(tempMaze);
 				}
@@ -146,15 +136,11 @@ public class Square
 			{
 				if(this.getWest() != null && !this.getWest().isWall())
 				{
-					System.out.println(this.getWest().toString() + " (W): ");
-					test += "W ";
-					
 					tempMaze.setNextState(this.getWest());
 					nexts.push(tempMaze);
 				}
 			}
 		}
-		System.out.println(test);
 		return nexts;
 	}
 	

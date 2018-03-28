@@ -55,11 +55,6 @@ public class BFS_Solver
 				
 				System.out.println(this.maze.printMaze());
 				
-				if(current.getFather() != null)
-					System.out.println(current.getFather().toString());
-				else
-					System.out.println("Pas de père pour current");
-				
 				if(currState.getLine() == this.maze.getEnd().getLine() && currState.getCol() == this.maze.getEnd().getCol())
 				{
 					Node<Maze> temp = new Node<Maze>(this.maze);
@@ -78,25 +73,13 @@ public class BFS_Solver
 					{
 						Node<Maze> temp = new Node<Maze>(nexts.get(i).getContent());
 						
-						System.out.println(temp.toString());
-						System.out.println(current.toString());
-						
 						temp.setFather(current); //Set current as father for all next states
 						
-						System.out.println(temp.getFather().toString());
-						if(temp.getFather().getFather() != null)
-							System.out.println(temp.getFather().getFather().toString());
-						else
-							System.out.println("Pas de grand-père pour temp");
+						this.frontier.add(temp);
+						
 						this.nodesCounter++;
 					}
-					
-					this.frontier.addAll(nexts); //Add all next squares into the frontier
-					if(frontier.get(0).getFather() != null)
-						System.out.println(frontier.get(0).getFather().toString());
 				}
-				
-				System.out.println(this.frontier);
 			}
 		}
 		
