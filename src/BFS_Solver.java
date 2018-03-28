@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import java.util.LinkedList;
 
 public class BFS_Solver
@@ -53,8 +54,6 @@ public class BFS_Solver
 				this.maze = (Maze) current.getContent(); //Get maze from the node
 				Square currState = this.maze.getCurrState(); //Get current state from the maze
 				
-				System.out.println(this.maze.printMaze());
-				
 				if(currState.getLine() == this.maze.getEnd().getLine() && currState.getCol() == this.maze.getEnd().getCol())
 				{
 					Node<Maze> temp = new Node<Maze>(this.maze);
@@ -68,15 +67,14 @@ public class BFS_Solver
 					LinkedList<Node<Maze>> nexts = this.getNextSquares(); //Get next possible states
 					this.closedNodes.add(currState);
 					
+					Iterator<Node<Maze>> x = nexts.iterator();
+					
 					//Set fathers
-					for(int i = 0; i < nexts.size(); i++)
+					while(x.hasNext())
 					{
-						Node<Maze> temp = new Node<Maze>(nexts.get(i).getContent());
-						
+						Node<Maze> temp = x.next();
 						temp.setFather(current); //Set current as father for all next states
-						
 						this.frontier.add(temp);
-						
 						this.nodesCounter++;
 					}
 				}
@@ -135,8 +133,9 @@ public class BFS_Solver
 		{
 			this.maze.resetGrid();
 			Node<Maze> revertedTree = this.frontier.removeLast();
-			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
+			
 			revertedTree = revertedTree.getFather();
+			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
 			this.pathLength++;
 			
 			while(revertedTree.hasFather())

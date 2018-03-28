@@ -1,3 +1,4 @@
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Stack;
 
@@ -5,8 +6,8 @@ public class DFS_Solver
 {
 	private Maze maze;
 	private String result;
-	private Stack<Square> frontier;
-	private Stack<Node<Square>> dynTreeNodes;
+	private Stack<Node<Maze>> frontier;
+	private Stack<Square> closedNodes;
 	private int nodesCounter;
 	private int pathLength;
 	
@@ -18,8 +19,8 @@ public class DFS_Solver
 	{
 		this.maze = m;
 		this.result = "";
-		this.frontier = new Stack<Square>();
-		this.dynTreeNodes = new Stack<Node<Square>>();
+		this.frontier = new Stack<Node<Maze>>();
+		this.closedNodes = new Stack<Square>();
 	}
 	
 	/*
@@ -32,16 +33,12 @@ public class DFS_Solver
 		this.pathLength = 0;
 		
 		//Init maze
-		this.maze.closedNodes.clear();
-		this.maze.initGrid();
-		
-		//Create the reverted tree -> First n containing the frist square
-		this.dynTreeNodes.add(new Node<Square>(this.maze.getStart()));
-		Node<Square> revertedTree = null;
+		this.closedNodes.clear();
+		this.maze.initMaze();
 		
 		//Init frontier
 		this.frontier.clear();
-		this.frontier.push(this.maze.getStart()); //Add first state
+		this.frontier.push(new Node<Maze>(this.maze)); //Add first state
 		
 		//Measure run time
 		long startTime = System.currentTimeMillis();
@@ -54,39 +51,68 @@ public class DFS_Solver
 			
 			else
 			{
-				Square current = this.frontier.pop(); //Get first node from the frontier
-				revertedTree = this.dynTreeNodes.pop();
+				Node<Maze> current = this.frontier.pop(); //Get first node from the frontier
+				this.maze = (Maze) current.getContent();
+				Square currState = this.maze.getCurrState();
 				
-				if(current.getLine() == this.maze.getEnd().getLine() && current.getCol() == this.maze.getEnd().getCol())
+				System.out.println(this.maze.printMaze());
+				
+				if(currState.getLine() == this.maze.getEnd().getLine() && currState.getCol() == this.maze.getEnd().getCol())
 				{
+					Node<Maze> temp = new Node<Maze>(this.maze);
+					temp.setFather(current);
+					this.frontier.push(temp);
 					endfound = true;
-					Node<Square> temp = new Node<Square>(current);
-					temp.setFather(revertedTree);
-					this.dynTreeNodes.push(temp);
 				}	
 				
 				else
 				{
-					LinkedList<Square> nexts = this.getNextSquares(current); //Get next possible states
+					LinkedList<Node<Maze>> nexts = this.getNextSquares(); //Get next possible states
+					this.closedNodes.push(currState);
 					
-					for(int i = 0; i < nexts.size(); i++)
+					Iterator<Node<Maze>> x = nexts.descendingIterator();
+					
+					while(x.hasNext())
 					{
-						Node<Square> temp = new Node<Square>(nexts.get(i));
-						temp.setFather(revertedTree);
-						this.dynTreeNodes.push(temp);
+						Node<Maze> temp = x.next();
+						temp.setFather(current);
+						this.frontier.push(temp);
 						this.nodesCounter++;
 					}
-					
-					this.frontier.addAll(nexts); //Add all next squares into the frontier
-					
-					this.maze.closedNodes.add(current); //Set current square as closed
 				}
+				System.out.println(this.frontier);
 			}
 		}
 		
 		long endTime = System.currentTimeMillis();
 		
 		this.setResult(endfound, (endTime - startTime));
+	}
+	
+	/*
+	 * Get the nexts ("walkables") squares from the given square
+	 * c: Square from where to get the nexts squares
+	 */
+	public LinkedList<Node<Maze>> getNextSquares()
+	{
+		LinkedList<Node<Maze>> res = new LinkedList<Node<Maze>>();
+		
+		//Get 4 next squares
+		LinkedList<Maze> nexts = this.maze.getCurrState().getNexts();
+		
+		for(int i = 0; i < nexts.size(); i++)
+		{
+			Square tempSq = nexts.get(i).getCurrState();
+			if(!this.closedNodes.contains(tempSq))
+			{
+				this.closedNodes.push(tempSq);
+				this.maze.getGrid()[tempSq.getLine()][tempSq.getCol()].setAttribute("*");
+				Node<Maze> tempNode = new Node<Maze>(nexts.get(i));
+				res.add(tempNode);
+			}
+		}
+		
+		return res;
 	}
 	
 	/*
@@ -100,77 +126,42 @@ public class DFS_Solver
 	 */
 	private void setResult(boolean success, long time)
 	{
-		if(this.maze.unicodeIsTheNewBlack())
-		{
-			this.result = "    ____             __  __       _______           __     _____                      __  \r\n" + 
+		this.result = "    ____             __  __       _______           __     _____                      __  \r\n" + 
 					"   / __ \\___  ____  / /_/ /_     / ____(_)_________/ /_   / ___/___  ____ ___________/ /_ \r\n" + 
 					"  / / / / _ \\/ __ \\/ __/ __ \\   / /_  / / ___/ ___/ __/   \\__ \\/ _ \\/ __ `/ ___/ ___/ __ \\\r\n" + 
 					" / /_/ /  __/ /_/ / /_/ / / /  / __/ / / /  (__  ) /_    ___/ /  __/ /_/ / /  / /__/ / / /\r\n" + 
 					"/_____/\\___/ .___/\\__/_/ /_/  /_/   /_/_/  /____/\\__/   /____/\\___/\\__,_/_/   \\___/_/ /_/ \r\n" + 
 					"          /_/                                                                             \n";
-		}
-		else
-			this.result = "/*********************/\nDEPTH FIRST SEARCH ALGORITHM\n";
 		
 		if(success)
 		{
-			this.maze.initGrid();
-			Node<Square> revertedTree = this.dynTreeNodes.pop();
+			this.maze.initMaze();
+			Node<Maze> revertedTree = this.frontier.pop();
 			
 			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
 			this.pathLength++;
 			
 			while(revertedTree.hasFather())
 			{
-				if(!revertedTree.getContent().equals(this.maze.getEnd()))
+				Maze temp = revertedTree.getContent();
+				Square state = temp.getCurrState();
+				
+				if(!state.equals(this.maze.getEnd()))
 				{
-					this.result += revertedTree.getContent().toString() + " <- ";
-					this.maze.getGrid()[revertedTree.getContent().getLine()][revertedTree.getContent().getCol()].setAttribute("*");
+					this.result += state.toString() + " <- ";
+					this.maze.getGrid()[state.getLine()][state.getCol()].setAttribute("*");
 					this.pathLength++;
 				}
 				revertedTree = revertedTree.getFather();
 			}
 			
 			this.result += this.maze.getStart().toString() + "(Start) \n" + "Path length: " + this.pathLength + "\nNumber of nodes created: " + this.nodesCounter + "\nExecution time: " + time/1000d + " seconds\n";
-			this.result += this.maze.toString();
+			this.result += this.maze.printMaze();
 		}
 		else
 		{
 			this.result += "Failed : Unable to go further and/or end is unreachable.";
 		}
-	}
-	
-	/*
-	 * Get the nexts ("walkables") squares from the given square
-	 * c: Square from where to get the nexts squares
-	 */
-	public LinkedList<Square> getNextSquares(Square c)
-	{
-		LinkedList<Square> res = new LinkedList<Square>();
-		
-		//Get 4 next squares
-		Square[] nextsquares = this.maze.getNexts(c);
-		
-		//Reversing for the DFS frontier, because it's a stack
-		for(int i = 0; i < nextsquares.length / 2; i++)
-		{
-			Square temp = nextsquares[i]; 
-			nextsquares[i] = nextsquares[nextsquares.length - i - 1]; 
-			nextsquares[nextsquares.length - i - 1] = temp; 
-		}
-		
-		for(Square s : nextsquares)
-		{
-			if(s != null && !s.isWall()) //Check if the square at next position is not null and if it's not a wall
-			{
-				if(!maze.closedNodes.contains(s) && !this.frontier.contains(s)) //Check if the square isn't already closed AND not already in the frontier
-				{
-					res.add(s); //Add the square
-				}
-			}
-		}
-		
-		return res;
 	}
 	
 	/*
@@ -187,7 +178,7 @@ public class DFS_Solver
 	/*
 	 * Returns the frontier from the last solving
 	 */
-	public Stack<Square> getFrontier() 
+	public Stack<Node<Maze>> getFrontier() 
 	{
 		return this.frontier;
 	}
