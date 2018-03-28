@@ -2,10 +2,12 @@ import java.lang.Math;
 
 public class Square
 {
+	private Maze maze;
 	private int l;
 	private int c;
 	private String attribute;
 	private boolean wall;
+	public int cost;
 	
 	private double g;
 	private double h;
@@ -18,8 +20,9 @@ public class Square
 	 * a: Square state
 	 * 		-> S = Start position
 	 * 		-> E = End position
-	 * 		-> [Space] = Playable
+	 * 		-> [Space] = Open
 	 * 		-> * = Closed (when the solving algorithms run through the maze)
+	 * 		-> o = Current position
 	 * 
 	 * -- Note: The wall attribute will be set as false because it can't be a wall.
 	 */
@@ -29,6 +32,7 @@ public class Square
 		this.c = c;
 		this.attribute = a; //S = Start; E = End; ' ' = Playable; * = Closed
 		this.wall = false;
+		this.cost = 0;
 		this.g = 0;
 		this.h = 0;
 		this.f = 0;
@@ -50,6 +54,11 @@ public class Square
 		this.g = 0;
 		this.h = 0;
 		this.f = 0;
+	}
+	
+	public void assignMaze(Maze m)
+	{
+		this.maze = m;
 	}
 
 	/*
@@ -84,6 +93,116 @@ public class Square
 	public void setCol(int c) 
 	{
 		this.c = c;
+	}
+	
+	/*
+	 * 
+	 * c: The origin Square from where to get the next squares
+	 */
+	public Maze[] getNextsFromOpen()
+	{
+		Maze[] nexts = new Maze[4];
+		String test = "Suivants : ";
+		
+		for(int i = 0; i < 4; i++)
+		{
+			switch(this.maze.order[i])
+			{
+				case 'N':
+					if(!this.maze.closedNodes.contains(this.getNorth()) && this.getNorth() != null)
+					{
+						System.out.println(this.getNorth().toString());
+						test += "N ";
+						Maze tempMaze = this.maze;
+						tempMaze.setNextState(this.getNorth());
+						nexts[i] = tempMaze;
+					}
+					break;
+					
+				case 'E':
+					if(!this.maze.closedNodes.contains(this.getEast()) && this.getEast() != null)
+					{
+						System.out.println(this.getEast().toString());
+						test += "E ";
+						Maze tempMaze = this.maze;
+						tempMaze.setNextState(this.getEast());
+						nexts[i] = tempMaze;
+					}
+					break;
+					
+				case 'S': 
+					if(!this.maze.closedNodes.contains(this.getSouth()) && this.getSouth() != null)
+					{
+						System.out.println(this.getSouth().toString());
+						test += "S ";
+						Maze tempMaze = this.maze;
+						tempMaze.setNextState(this.getSouth());
+						nexts[i] = tempMaze;
+					}
+					break;
+					
+				case 'W': 
+					if(!this.maze.closedNodes.contains(this.getWest()) && this.getWest() != null)
+					{
+						System.out.println(this.getWest().toString());
+						test += "W ";
+						Maze tempMaze = this.maze;
+						tempMaze.setNextState(this.getWest());
+						nexts[i] = tempMaze;
+					}
+					break;
+			}
+		}
+		System.out.println(test);
+		return nexts;
+	}
+	
+	/*
+	 * Returns the Square at North from the given Square
+	 * c: The origin Square from where to get the North Square
+	 */
+	public Square getNorth()
+	{
+		if(this.l - 1 < 0)
+			return null;
+		else
+			return this.maze.getGrid()[this.l - 1][this.c];
+	}
+	
+	/*
+	 * Returns the Square at West from the given Square
+	 * c: The origin Square from where to get the West Square
+	 */
+	public Square getWest()
+	{
+		if(this.c - 1 < 0)
+			return null;
+		else
+			return this.maze.getGrid()[this.l][this.c - 1];
+	}
+	
+	/*
+	 * Returns the Square at South from the given Square
+	 * c: The origin Square from where to get the South Square
+	 */
+	public Square getSouth()
+	{
+		if(this.l + 1 == this.maze.lMax)
+			return null;
+		else
+			return this.maze.getGrid()[this.l + 1][this.c];
+	}
+	
+	/*
+	 * Returns the Square at East from the given Square
+	 * c: The origin Square from where to get the East Square
+	 */
+	public Square getEast()
+	{
+		if(this.c + 1 == this.maze.cMax)
+			return null;
+		else
+			return this.maze.getGrid()[this.l][this.c + 1];
 	}
 
 	/*
