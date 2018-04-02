@@ -13,8 +13,6 @@ public class Maze
 	public int cMax;
 	public char[] order = {'N', 'E', 'S', 'W'}; //Shift order in the grid during solving in cardinals
 	
-	boolean fancyMode;
-	
 	/*
 	 * Constructor with no file
 	 * lRange: Number of lines in the maze
@@ -40,8 +38,9 @@ public class Maze
 		this.assignMazeToGridSquares();
 		
 		//Create start and end MazeState objects contaning the start and end squares (stated)
-		this.setEnd(end);
-		this.setStart(start);
+		this.end = end;
+		this.end.depth = 0;
+		this.start = start;
 		
 		this.currState = this.getStart();
 		//At this point, the grid is and stay the inital Maze unsolved.
@@ -240,22 +239,6 @@ public class Maze
 	public Square[][] getGrid() 
 	{
 		return grid;
-	}
-	
-	/*
-	 * Magical attribute setter...
-	 */
-	public void fancyness(boolean verity)
-	{
-		this.fancyMode = verity;
-	}
-	
-	/*
-	 * Magical attribute getter...
-	 */
-	public boolean unicodeIsTheNewBlack()
-	{
-		return this.fancyMode;
 	}
 	
 	public Maze clone()

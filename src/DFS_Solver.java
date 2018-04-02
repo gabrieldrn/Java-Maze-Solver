@@ -7,7 +7,7 @@ public class DFS_Solver
 	private Maze maze;
 	private String result;
 	private Stack<Node<Maze>> frontier;
-	private Stack<Square> closedNodes;
+	private Stack<Square> closedSquares;
 	private int nodesCounter;
 	private int pathLength;
 	
@@ -20,7 +20,7 @@ public class DFS_Solver
 		this.maze = m;
 		this.result = "";
 		this.frontier = new Stack<Node<Maze>>();
-		this.closedNodes = new Stack<Square>();
+		this.closedSquares = new Stack<Square>();
 	}
 	
 	/*
@@ -33,7 +33,7 @@ public class DFS_Solver
 		this.pathLength = 0;
 		
 		//Init maze
-		this.closedNodes.clear();
+		this.closedSquares.clear();
 		this.maze.initMaze();
 		
 		//Init frontier
@@ -54,6 +54,8 @@ public class DFS_Solver
 				Node<Maze> current = this.frontier.pop(); //Get first node from the frontier
 				this.maze = (Maze) current.getContent();
 				Square currState = this.maze.getCurrState();
+			
+				System.out.println(this.maze.printMaze());
 				
 				if(currState.getLine() == this.maze.getEnd().getLine() && currState.getCol() == this.maze.getEnd().getCol())
 				{
@@ -66,7 +68,11 @@ public class DFS_Solver
 				else
 				{
 					LinkedList<Node<Maze>> nexts = this.getNextSquares(); //Get next possible states
-					this.closedNodes.push(currState);
+					if(!this.closedSquares.contains(currState))
+					{
+						this.closedSquares.push(currState);
+						currState.setAttribute("*");
+					}
 					
 					Iterator<Node<Maze>> x = nexts.descendingIterator();
 					
@@ -78,6 +84,7 @@ public class DFS_Solver
 						this.nodesCounter++;
 					}
 				}
+				System.out.println(this.frontier.toString());
 			}
 		}
 		
@@ -100,10 +107,9 @@ public class DFS_Solver
 		for(int i = 0; i < nexts.size(); i++)
 		{
 			Square tempSq = nexts.get(i).getCurrState();
-			if(!this.closedNodes.contains(tempSq))
+			if(!this.closedSquares.contains(tempSq))
 			{
-				this.closedNodes.push(tempSq);
-				this.maze.getGrid()[tempSq.getLine()][tempSq.getCol()].setAttribute("*");
+				//this.closedSquares.push(tempSq);
 				Node<Maze> tempNode = new Node<Maze>(nexts.get(i));
 				res.add(tempNode);
 			}

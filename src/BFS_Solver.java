@@ -6,7 +6,7 @@ public class BFS_Solver
 	private Maze maze;
 	private String result;
 	private LinkedList<Node<Maze>> frontier;
-	private LinkedList<Square> closedNodes;
+	private LinkedList<Square> closedSquares;
 	private int nodesCounter;
 	private int pathLength;
 	
@@ -19,7 +19,7 @@ public class BFS_Solver
 		this.maze = m;
 		this.result = "";
 		this.frontier = new LinkedList<Node<Maze>>();
-		this.closedNodes = new LinkedList<Square>();
+		this.closedSquares = new LinkedList<Square>();
 	}
 	
 	/*
@@ -32,7 +32,7 @@ public class BFS_Solver
 		this.pathLength = 0;
 		
 		//Init maze
-		this.closedNodes.clear();
+		this.closedSquares.clear();
 		this.maze.initMaze();
 		
 		//Init frontier
@@ -54,6 +54,8 @@ public class BFS_Solver
 				this.maze = (Maze) current.getContent(); //Get maze from the node
 				Square currState = this.maze.getCurrState(); //Get current state from the maze
 				
+				//System.out.println(this.maze.printMaze());
+				
 				if(currState.getLine() == this.maze.getEnd().getLine() && currState.getCol() == this.maze.getEnd().getCol())
 				{
 					Node<Maze> temp = new Node<Maze>(this.maze);
@@ -65,7 +67,11 @@ public class BFS_Solver
 				else
 				{
 					LinkedList<Node<Maze>> nexts = this.getNextSquares(); //Get next possible states
-					this.closedNodes.add(currState);
+					if(!this.closedSquares.contains(currState))
+					{
+						this.closedSquares.add(currState);
+						currState.setAttribute("*");
+					}
 					
 					Iterator<Node<Maze>> x = nexts.iterator();
 					
@@ -78,6 +84,8 @@ public class BFS_Solver
 						this.nodesCounter++;
 					}
 				}
+				
+				//System.out.println(this.frontier.toString());
 			}
 		}
 		
@@ -100,10 +108,10 @@ public class BFS_Solver
 		for(int i = 0; i < nexts.size(); i++)
 		{
 			Square tempSq = nexts.get(i).getCurrState();
-			if(!this.closedNodes.contains(tempSq))
+			if(!this.closedSquares.contains(tempSq))
 			{
-				this.closedNodes.add(tempSq);
-				this.maze.getGrid()[tempSq.getLine()][tempSq.getCol()].setAttribute("*");
+				//this.closedSquares.add(tempSq);
+				//this.maze.getGrid()[tempSq.getLine()][tempSq.getCol()].setAttribute("*");
 				Node<Maze> tempNode = new Node<Maze>(nexts.get(i));
 				res.add(tempNode); //Add the state
 			}
@@ -178,8 +186,8 @@ public class BFS_Solver
 	public String printClosedNodes()
 	{
 		String res = "Closed nodes : \n";
-		for(int i = 0; i < this.closedNodes.size(); i++)
-			res += "(" + i + ") " + this.closedNodes.get(i).toString() + "\n";
+		for(int i = 0; i < this.closedSquares.size(); i++)
+			res += "(" + i + ") " + this.closedSquares.get(i).toString() + "\n";
 		
 		return res;
 	}

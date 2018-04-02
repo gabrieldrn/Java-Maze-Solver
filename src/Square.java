@@ -8,7 +8,7 @@ public class Square
 	private int c;
 	private String attribute;
 	private boolean wall;
-	public int cost;
+	public int depth;
 	
 	private double g;
 	private double h;
@@ -33,7 +33,7 @@ public class Square
 		this.c = c;
 		this.attribute = a; //S = Start; E = End; ' ' = Playable; * = Closed
 		this.wall = false;
-		this.cost = 0;
+		this.depth = 0;
 		this.g = 0;
 		this.h = 0;
 		this.f = 0;
