@@ -24,22 +24,22 @@ public class Main
 
 		Maze lab2 = new Maze("./data/test.txt");
 		
-		/*char[] order = {'N', 'S', 'W', 'E'};
-		lab2.setOrder(order);*/
+		char[] order = {'N', 'W', 'S', 'E'};
+		lab2.setOrder(order);
 		
 		//System.out.println(lab2.toString());
 		
 		lab2.fancyness(true);
 		
-		//BFS_Solver b2 = new BFS_Solver(lab2);
+		BFS_Solver b2 = new BFS_Solver(lab2);
 		DFS_Solver d2 = new DFS_Solver(lab2);
 		//AStarSolver a2 = new AStarSolver(lab2);
 		
-		//b2.solve();
+		b2.solve();
 		d2.solve();
 		//a2.solve(true);
 		
-		//System.out.println(b2.getResult());
+		System.out.println(b2.getResult());
 		System.out.println(d2.getResult());
 		//System.out.println(a2.getResult());
 		

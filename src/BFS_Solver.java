@@ -5,8 +5,8 @@ public class BFS_Solver
 {
 	private Maze maze;
 	private String result;
-	LinkedList<Node<Maze>> frontier;
-	LinkedList<Square> closedNodes;
+	private LinkedList<Node<Maze>> frontier;
+	private LinkedList<Square> closedNodes;
 	private int nodesCounter;
 	private int pathLength;
 	

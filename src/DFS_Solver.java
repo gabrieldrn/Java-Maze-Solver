@@ -55,8 +55,6 @@ public class DFS_Solver
 				this.maze = (Maze) current.getContent();
 				Square currState = this.maze.getCurrState();
 				
-				System.out.println(this.maze.printMaze());
-				
 				if(currState.getLine() == this.maze.getEnd().getLine() && currState.getCol() == this.maze.getEnd().getCol())
 				{
 					Node<Maze> temp = new Node<Maze>(this.maze);
@@ -80,7 +78,6 @@ public class DFS_Solver
 						this.nodesCounter++;
 					}
 				}
-				System.out.println(this.frontier);
 			}
 		}
 		
