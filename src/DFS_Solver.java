@@ -54,8 +54,6 @@ public class DFS_Solver
 				Node<Maze> current = this.frontier.pop(); //Get first node from the frontier
 				this.maze = (Maze) current.getContent();
 				Square currState = this.maze.getCurrState();
-			
-				System.out.println(this.maze.printMaze());
 				
 				if(currState.getLine() == this.maze.getEnd().getLine() && currState.getCol() == this.maze.getEnd().getCol())
 				{
@@ -84,7 +82,6 @@ public class DFS_Solver
 						this.nodesCounter++;
 					}
 				}
-				System.out.println(this.frontier.toString());
 			}
 		}
 		
@@ -109,7 +106,6 @@ public class DFS_Solver
 			Square tempSq = nexts.get(i).getCurrState();
 			if(!this.closedSquares.contains(tempSq))
 			{
-				//this.closedSquares.push(tempSq);
 				Node<Maze> tempNode = new Node<Maze>(nexts.get(i));
 				res.add(tempNode);
 			}

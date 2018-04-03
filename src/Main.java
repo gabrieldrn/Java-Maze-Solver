@@ -22,7 +22,7 @@ public class Main
 		//====================
 		//====================
 
-		Maze lab2 = new Maze("./data/lab_samuel.txt");
+		Maze lab2 = new Maze("./data/lab.txt");
 		
 		//char[] order = {'N', 'W', 'S', 'E'};
 		//lab2.setOrder(order);
