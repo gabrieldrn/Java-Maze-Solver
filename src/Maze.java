@@ -229,8 +229,8 @@ public class Maze
 	 */
 	public void resetOrder()
 	{
-		char[] no = {'N', 'E', 'S', 'W'}; 
-		this.order = no;
+		char[] o = {'N', 'E', 'S', 'W'}; 
+		this.order = o;
 	}
 
 	/*

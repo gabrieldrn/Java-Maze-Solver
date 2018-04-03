@@ -10,7 +10,7 @@ public class Square
 	private boolean wall;
 	public int depth;
 	
-	private double g;
+	private int g;
 	private double h;
 	private double f;
 	
@@ -248,24 +248,22 @@ public class Square
 	 * Computes the H value with the Manhattan distance
 	 * end: The ending Square in the maze
 	 */
-	public void calcManhattanH(Square end) 
+	public void calcManhattanH() 
 	{
-		if(end.getAttribute() == "E")
-			this.h = Math.abs( this.getLine() - end.getLine() ) 
-					 + Math.abs( this.getCol() - end.getCol() );
+		this.h = Math.abs( this.getLine() - this.maze.getEnd().getLine() ) 
+				 + Math.abs( this.getCol() - this.maze.getEnd().getCol() );
 	}
 	
 	/*
 	 * Computes the H value with the Euclidean distance
 	 * end: The ending Square in the maze
 	 */
-	public void calcEuclidH(Square end)
+	public void calcEuclidH()
 	{
-		if(end.getAttribute() == "E")
-			this.h = Math.sqrt(
-						Math.pow( this.getLine() - end.getLine(), 2 ) 
-						+ Math.pow( this.getCol() - end.getCol(), 2 )
-					);
+		this.h = Math.sqrt(
+					Math.pow( this.getLine() - this.maze.getEnd().getLine(), 2 ) 
+					+ Math.pow( this.getCol() - this.maze.getEnd().getCol(), 2 )
+				);
 	}
 	
 	//----------------------
@@ -275,33 +273,17 @@ public class Square
 	/*
 	 * Returns G value
 	 */
-	public double getG() 
+	public int getG() 
 	{
 		return g;
 	}
 	
 	/*
-	 * Computes the G value with the Manhattan distance
-	 * start: The starting Square in the maze
+	 * Increases the G value
 	 */
-	public void calcManhattanG(Square start)
+	public void incG(int prev)
 	{
-		if(start.getAttribute() == "S")
-			this.g = Math.abs( this.getLine() - start.getLine() ) 
-					 + Math.abs( this.getCol() - start.getCol() );
-	}
-	
-	/*
-	 * Computes the G value with the Euclidean distance
-	 * start: The starting Square in the maze
-	 */
-	public void calcEuclidG(Square start)
-	{
-		if(start.getAttribute() == "S")
-			this.g = Math.sqrt( 
-						Math.pow( this.getLine() - start.getLine(), 2 ) 
-						+ Math.pow( this.getCol() - start.getCol(), 2 ) 
-					);
+		this.g = 1 + prev;
 	}
 	
 	//----------------------

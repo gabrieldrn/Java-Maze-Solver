@@ -67,9 +67,9 @@ public class AStarSolver
 		
 		//Compute F value of Starting square
 		if(manhattan)
-			this.maze.getStart().calcManhattanH(this.maze.getEnd());
+			this.maze.getStart().calcManhattanH();
 		else
-			this.maze.getStart().calcEuclidH(this.maze.getEnd());
+			this.maze.getStart().calcEuclidH();
 		
 		this.maze.getStart().calcF();
 		
@@ -88,12 +88,9 @@ public class AStarSolver
 			
 			else
 			{
-				//Square current = this.openNodes.remove();
 				Node<Maze> current = this.openNodes.remove();
 				this.maze = (Maze) current.getContent();
 				Square currState = this.maze.getCurrState();
-				
-				//System.out.println(this.maze.printMaze());
 				
 				if(currState.getCol() == this.maze.getEnd().getCol() && currState.getLine() == this.maze.getEnd().getLine())
 				{
@@ -149,8 +146,8 @@ public class AStarSolver
 		
 		//Get 4 next squares
 		LinkedList<Maze> nexts = this.maze.getCurrState().getNexts();
-		Square start = this.maze.getStart();
-		Square end = this.maze.getEnd();
+		
+		int gCurrent = this.maze.getCurrState().getG();
 		
 		for(int i = 0; i < nexts.size(); i++)
 		{
@@ -158,15 +155,11 @@ public class AStarSolver
 			if(!this.closedSquares.contains(tempSq))
 			{
 				if(manhattan)
-				{
-					nexts.get(i).getCurrState().calcManhattanG(start);
-					nexts.get(i).getCurrState().calcManhattanH(end);
-				}
+					nexts.get(i).getCurrState().calcManhattanH();
 				else
-				{
-					nexts.get(i).getCurrState().calcEuclidG(start);
-					nexts.get(i).getCurrState().calcEuclidH(end);
-				}
+					nexts.get(i).getCurrState().calcEuclidH();
+				
+				nexts.get(i).getCurrState().incG(gCurrent);
 				
 				nexts.get(i).getCurrState().calcF();
 				
