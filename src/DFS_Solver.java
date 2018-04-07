@@ -2,14 +2,10 @@ import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.Stack;
 
-public class DFS_Solver
+public class DFS_Solver extends Solver
 {
-	private Maze maze;
-	private String result;
-	private Stack<Node<Maze>> frontier;
-	private Stack<Square> closedSquares;
-	private int nodesCounter;
-	private int pathLength;
+	/*private Stack<Node<Maze>> frontier;
+	private Stack<Square> closedSquares;*/
 	
 	/*
 	 * Constructor
@@ -38,7 +34,7 @@ public class DFS_Solver
 		
 		//Init frontier
 		this.frontier.clear();
-		this.frontier.push(new Node<Maze>(this.maze)); //Add first state
+		((Stack<Node<Maze>>) this.frontier).push(new Node<Maze>(this.maze)); //Add first state
 		
 		//Measure run time
 		long startTime = System.currentTimeMillis();
@@ -51,7 +47,7 @@ public class DFS_Solver
 			
 			else
 			{
-				Node<Maze> current = this.frontier.pop(); //Get first node from the frontier
+				Node<Maze> current = ((Stack<Node<Maze>>) this.frontier).pop(); //Get first node from the frontier
 				this.maze = (Maze) current.getContent();
 				Square currState = this.maze.getCurrState();
 				
@@ -59,7 +55,7 @@ public class DFS_Solver
 				{
 					Node<Maze> temp = new Node<Maze>(this.maze);
 					temp.setFather(current);
-					this.frontier.push(temp);
+					((Stack<Node<Maze>>) this.frontier).push(temp);
 					endfound = true;
 				}	
 				
@@ -68,7 +64,7 @@ public class DFS_Solver
 					LinkedList<Node<Maze>> nexts = this.getNextSquares(); //Get next possible states
 					if(!this.closedSquares.contains(currState))
 					{
-						this.closedSquares.push(currState);
+						((Stack<Square>) this.closedSquares).push(currState);
 						currState.setAttribute("*");
 					}
 					
@@ -78,7 +74,7 @@ public class DFS_Solver
 					{
 						Node<Maze> temp = x.next();
 						temp.setFather(current);
-						this.frontier.push(temp);
+						((Stack<Node<Maze>>) this.frontier).push(temp);
 						this.nodesCounter++;
 					}
 				}
@@ -135,7 +131,7 @@ public class DFS_Solver
 		if(success)
 		{
 			this.maze.initMaze();
-			Node<Maze> revertedTree = this.frontier.pop();
+			Node<Maze> revertedTree = ((Stack<Node<Maze>>) this.frontier).pop();
 			
 			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
 			this.pathLength++;
@@ -171,7 +167,7 @@ public class DFS_Solver
 		if(result == "")
 			return "No resolution computed, please use DFS_Solver.solve() first";
 		else
-			return result;
+			return this.result;
 	}
 
 	/*
@@ -179,6 +175,6 @@ public class DFS_Solver
 	 */
 	public Stack<Node<Maze>> getFrontier() 
 	{
-		return this.frontier;
+		return (Stack<Node<Maze>>) this.frontier;
 	}
 }

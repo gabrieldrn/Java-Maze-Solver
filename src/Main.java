@@ -31,17 +31,19 @@ public class Main
 		
 		BFS_Solver b2 = new BFS_Solver(lab2);
 		DFS_Solver d2 = new DFS_Solver(lab2);
-		AStarSolver a2 = new AStarSolver(lab2);
+		AStarSolver a2 = new AStarSolver(lab2, true);
 		
 		b2.solve();
 		d2.solve();
-		a2.solve(true);
+		a2.solve();
 		
 		System.out.println(b2.getResult());
 		System.out.println(d2.getResult());
 		System.out.println(a2.getResult());
 		
-		a2.solve(false);
+		a2 = new AStarSolver(lab2, false);
+		
+		a2.solve();
 		System.out.println(a2.getResult());
 	}
 }

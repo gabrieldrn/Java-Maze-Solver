@@ -39,7 +39,6 @@ public class Maze
 		
 		//Create start and end MazeState objects contaning the start and end squares (stated)
 		this.end = end;
-		this.end.depth = 0;
 		this.start = start;
 		
 		this.currState = this.getStart();

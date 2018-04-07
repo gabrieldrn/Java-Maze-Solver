@@ -2,26 +2,19 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
-import java.util.Queue;
 
-public class AStarSolver
+public class AStarSolver extends Solver
 {
-	private Maze maze;
-	private String result;
-	private Queue<Node<Maze>> openNodes;
-	private Queue<Square> closedSquares;
-	private int nodesCounter;
-	private int pathLength;
-	
 	/*
 	 * Constructor
 	 * m: The maze to solve
 	 */
-	public AStarSolver(Maze m)
+	public AStarSolver(Maze m, Boolean manhattan)
 	{
 		this.maze = m;
 		this.result = "";
-		this.openNodes = new PriorityQueue<Node<Maze>>(new Comparator<Node<Maze>>()
+		this.manhattan = manhattan; 
+		this.frontier = new PriorityQueue<Node<Maze>>(new Comparator<Node<Maze>>()
 		{
 			public int compare(Node<Maze> s1, Node<Maze> s2) 
 		    {
@@ -57,7 +50,7 @@ public class AStarSolver
 	 * Solves the maze with the A* algorithm
 	 * manhattan: Set as true to use the MANHATTAN DISTANCE instead of EUCLIDEAN DISTANCE 
 	 */
-	public void solve(boolean manhattan)
+	public void solve()
 	{
 		this.maze.initMaze(); //Re-init maze
 		
@@ -74,8 +67,8 @@ public class AStarSolver
 		this.maze.getStart().calcF();
 		
 		//Init data structures
-		this.openNodes.clear(); //Clear openNodes Queue
-		this.openNodes.offer(new Node<Maze>(this.maze)); //Adding the first node (Start node) (G is at 0, Start to Start = 0)
+		this.frontier.clear(); //Clear frontier Queue
+		((PriorityQueue<Node<Maze>>) this.frontier).offer(new Node<Maze>(this.maze)); //Adding the first node (Start node) (G is at 0, Start to Start = 0)
 		this.closedSquares.clear(); //Clear closedSquares
 		
 		//Measure run time
@@ -83,12 +76,12 @@ public class AStarSolver
 		
 		while(!endfound)
 		{
-			if(this.openNodes.isEmpty())
+			if(this.frontier.isEmpty())
 				break;
 			
 			else
 			{
-				Node<Maze> current = this.openNodes.remove();
+				Node<Maze> current = ((PriorityQueue<Node<Maze>>) this.frontier).remove();
 				this.maze = (Maze) current.getContent();
 				Square currState = this.maze.getCurrState();
 				
@@ -96,13 +89,13 @@ public class AStarSolver
 				{
 					Node<Maze> temp = new Node<Maze>(this.maze);
 					temp.setFather(current);
-					this.openNodes.offer(temp);
+					((PriorityQueue<Node<Maze>>) this.frontier).offer(temp);
 					endfound = true;
 				}
 				
 				else
 				{
-					LinkedList<Node<Maze>> nexts = this.getNextSquares(manhattan);
+					LinkedList<Node<Maze>> nexts = this.getNextSquares();
 					if(!this.closedSquares.contains(currState))
 					{
 						this.closedSquares.add(currState);
@@ -119,10 +112,10 @@ public class AStarSolver
 				    		continue;
 				    	else
 				    	{
-				    		if(!this.openNodes.contains(neighbor))
+				    		if(!this.frontier.contains(neighbor))
 				    		{
 				    			neighbor.setFather(current);
-				    			this.openNodes.offer(neighbor);
+				    			((PriorityQueue<Node<Maze>>) this.frontier).offer(neighbor);
 				    			this.nodesCounter++;
 				    		}
 				    	}
@@ -132,15 +125,14 @@ public class AStarSolver
 		}
 		long endTime = System.currentTimeMillis();
 		
-		this.setResult(endfound, manhattan, endTime - startTime);
+		this.setResult(endfound, endTime - startTime);
 	}
 	
 	/*
 	 *  Get the next ("walkables") squares from the given square
 	 *  c: Square from where to get the nexts squares
-	 *  manhattan: If True, the distances computed will use the MANHATTAN DISTANCE instead of EUCLIDEAN DISTANCE
 	 */
-	public LinkedList<Node<Maze>> getNextSquares(Boolean manhattan)
+	public LinkedList<Node<Maze>> getNextSquares()
 	{
 		LinkedList<Node<Maze>> res = new LinkedList<Node<Maze>>();
 		
@@ -154,7 +146,7 @@ public class AStarSolver
 			Square tempSq = nexts.get(i).getCurrState();
 			if(!this.closedSquares.contains(tempSq))
 			{
-				if(manhattan)
+				if(this.manhattan)
 					nexts.get(i).getCurrState().calcManhattanH();
 				else
 					nexts.get(i).getCurrState().calcEuclidH();
@@ -180,9 +172,9 @@ public class AStarSolver
 	 *  
 	 *  PRIVATE: This method must be called only at the end of the solve method. Any other call may throw errors.
 	 */
-	private void setResult(boolean success, boolean manhattan, long time)
+	private void setResult(boolean success, long time)
 	{
-		if(manhattan)
+		if(this.manhattan)
 			this.result = "    ___                    __  ___            __          __  __            \r\n" + 
 					"   /   | __/|_            /  |/  /___ _____  / /_  ____ _/ /_/ /_____ _____ \r\n" + 
 					"  / /| ||    /  ______   / /|_/ / __ `/ __ \\/ __ \\/ __ `/ __/ __/ __ `/ __ \\\r\n" + 
@@ -198,7 +190,7 @@ public class AStarSolver
 		if(success)
 		{
 			this.maze.resetGrid();
-			Node<Maze> revertedTree = this.openNodes.remove();
+			Node<Maze> revertedTree = ((PriorityQueue<Node<Maze>>) this.frontier).remove();
 			
 			revertedTree = revertedTree.getFather();
 			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";

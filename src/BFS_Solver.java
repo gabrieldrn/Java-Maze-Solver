@@ -1,14 +1,8 @@
 import java.util.Iterator;
 import java.util.LinkedList;
 
-public class BFS_Solver
+public class BFS_Solver extends Solver
 {
-	private Maze maze;
-	private String result;
-	private LinkedList<Node<Maze>> frontier;
-	private LinkedList<Square> closedSquares;
-	private int nodesCounter;
-	private int pathLength;
 	
 	/*
 	 * Constructor
@@ -50,7 +44,7 @@ public class BFS_Solver
 			
 			else
 			{
-				Node<Maze> current = this.frontier.removeFirst(); //Get first node from the frontier
+				Node<Maze> current = ((LinkedList<Node<Maze>>) this.frontier).removeFirst(); //Get first node from the frontier
 				this.maze = (Maze) current.getContent(); //Get maze from the node
 				Square currState = this.maze.getCurrState(); //Get current state from the maze
 				
@@ -140,7 +134,7 @@ public class BFS_Solver
 		if(success)
 		{
 			this.maze.resetGrid();
-			Node<Maze> revertedTree = this.frontier.removeLast();
+			Node<Maze> revertedTree = ((LinkedList<Node<Maze>>) this.frontier).removeLast();
 			
 			revertedTree = revertedTree.getFather();
 			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
@@ -181,22 +175,10 @@ public class BFS_Solver
 	}
 	
 	/*
-	 * Returns all the closed nodes in a string
-	 */
-	public String printClosedNodes()
-	{
-		String res = "Closed nodes : \n";
-		for(int i = 0; i < this.closedSquares.size(); i++)
-			res += "(" + i + ") " + this.closedSquares.get(i).toString() + "\n";
-		
-		return res;
-	}
-	
-	/*
 	 * Returns the frontier from the last solving
 	 */
 	public LinkedList<Node<Maze>> getFrontier() 
 	{
-		return this.frontier;
+		return (LinkedList<Node<Maze>>) this.frontier;
 	}
 }
