@@ -19,13 +19,22 @@ public class AStarSolver extends Solver
 		{
 			public int compare(Node<Maze> s1, Node<Maze> s2) 
 		    {
-		    	Double cs1 = s1.getContent().getCurrState().getF();
-		    	Double cs2 = s2.getContent().getCurrState().getF();
+		    	Double sf1 = s1.getContent().getCurrState().getF();
+		    	Double sf2 = s2.getContent().getCurrState().getF();
+		    	Double sh1 = s1.getContent().getCurrState().getH();
+		    	Double sh2 = s2.getContent().getCurrState().getH();
 		    	
-		    	if(cs1 > cs2)
+		    	if(sf1 > sf2)
 		    		return 1;
-		    	else if(cs1 == cs2)
-		    		return 0;
+		    	else if(sf1 == sf2)
+		    	{
+		    		if(sh1 > sh2)
+		    			return 1;
+		    		else if(sh1 == sh2)
+		    			return 0;
+		    		else
+		    			return -1;
+		    	}
 		    	else
 		    		return -1;
 		    }
@@ -34,13 +43,22 @@ public class AStarSolver extends Solver
 		{
 			public int compare(Square s1, Square s2) 
 		    {
-		    	Double cs1 = s1.getF();
-		    	Double cs2 = s2.getF();
+				Double sf1 = s1.getF();
+		    	Double sf2 = s2.getF();
+		    	Double sh1 = s1.getH();
+		    	Double sh2 = s2.getH();
 		    	
-		    	if(cs1 > cs2)
+		    	if(sf1 > sf2)
 		    		return 1;
-		    	else if(cs1 == cs2)
-		    		return 0;
+		    	else if(sf1 == sf2)
+		    	{
+		    		if(sh1 > sh2)
+		    			return 1;
+		    		else if(sh1 == sh2)
+		    			return 0;
+		    		else
+		    			return -1;
+		    	}
 		    	else
 		    		return -1;
 		    }

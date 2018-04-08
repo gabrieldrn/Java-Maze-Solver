@@ -89,9 +89,10 @@ public class DFS_Solver extends Solver
 	
 		if(endfound)
 		{
-			this.maze.initMaze();
+			this.maze.resetGrid();
 			Node<Maze> revertedTree = ((Stack<Node<Maze>>) this.frontier).pop();
 			
+			revertedTree = revertedTree.getFather().getFather();
 			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
 			this.pathLength++;
 			

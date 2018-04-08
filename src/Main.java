@@ -22,9 +22,9 @@ public class Main
 		//====================
 		//====================
 
-		Maze lab2 = new Maze("./data/test.txt");
+		Maze lab2 = new Maze("./data/lab.txt");
 		
-		//char[] order = {'N', 'W', 'S', 'E'};
+		//char[] order = {'W', 'E', 'N', 'S'};
 		//lab2.setOrder(order);
 		
 		//System.out.println(lab2.toString());
