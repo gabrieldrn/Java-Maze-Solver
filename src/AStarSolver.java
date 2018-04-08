@@ -1,3 +1,4 @@
+import java.util.AbstractCollection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
@@ -46,11 +47,7 @@ public class AStarSolver extends Solver
 		});
 	}
 	
-	/*
-	 * Solves the maze with the A* algorithm
-	 * manhattan: Set as true to use the MANHATTAN DISTANCE instead of EUCLIDEAN DISTANCE 
-	 */
-	public void solve()
+	public String solve()
 	{
 		this.maze.initMaze(); //Re-init maze
 		
@@ -125,7 +122,53 @@ public class AStarSolver extends Solver
 		}
 		long endTime = System.currentTimeMillis();
 		
-		this.setResult(endfound, endTime - startTime);
+		long time = endTime - startTime;
+		
+		if(this.manhattan)
+			this.result = "    ___                    __  ___            __          __  __            \r\n" + 
+					"   /   | __/|_            /  |/  /___ _____  / /_  ____ _/ /_/ /_____ _____ \r\n" + 
+					"  / /| ||    /  ______   / /|_/ / __ `/ __ \\/ __ \\/ __ `/ __/ __/ __ `/ __ \\\r\n" + 
+					" / ___ /_ __|  /_____/  / /  / / /_/ / / / / / / / /_/ / /_/ /_/ /_/ / / / /\r\n" + 
+					"/_/  |_||/             /_/  /_/\\__,_/_/ /_/_/ /_/\\__,_/\\__/\\__/\\__,_/_/ /_/ \n";
+		else
+			this.result = "    ___                    ______           ___     __\r\n" + 
+					"   /   | __/|_            / ____/_  _______/ (_)___/ /\r\n" + 
+					"  / /| ||    /  ______   / __/ / / / / ___/ / / __  / \r\n" + 
+					" / ___ /_ __|  /_____/  / /___/ /_/ / /__/ / / /_/ /  \r\n" + 
+					"/_/  |_||/             /_____/\\__,_/\\___/_/_/\\__,_/   \n";
+		
+		if(endfound)
+		{
+			this.maze.resetGrid();
+			Node<Maze> revertedTree = ((PriorityQueue<Node<Maze>>) this.frontier).remove();
+			
+			revertedTree = revertedTree.getFather();
+			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
+			this.pathLength++;
+			
+			while(revertedTree.hasFather())
+			{
+				Maze temp = revertedTree.getContent();
+				Square state = temp.getCurrState();
+				
+				if(!state.equals(this.maze.getEnd()))
+				{
+					this.result += state.toString() + " <- ";
+					this.maze.getGrid()[state.getLine()][state.getCol()].setAttribute("*");
+					this.pathLength++;
+				}
+				revertedTree = revertedTree.getFather();
+			}
+			
+			this.result += this.maze.getStart().toString() + "(Start) \n" + "Path length: " + this.pathLength + "\nNumber of nodes created: " + this.nodesCounter + "\nExecution time: " + time/1000d + " seconds\n";
+			this.result += this.maze.printMaze();
+		}
+		else
+		{
+			this.result += "Failed : Unable to go further and/or end is unreachable.";
+		}
+		
+		return this.result;
 	}
 	
 	/*
@@ -162,71 +205,17 @@ public class AStarSolver extends Solver
 		
 		return res;
 	}
-	
-	/*
-	 * Sets the result in this format : 
-	 * 	- Path trace
-	 *  - Path length
-	 *  - Number of nodes created
-	 *  - The maze with the path written
-	 *  
-	 *  PRIVATE: This method must be called only at the end of the solve method. Any other call may throw errors.
-	 */
-	private void setResult(boolean success, long time)
-	{
-		if(this.manhattan)
-			this.result = "    ___                    __  ___            __          __  __            \r\n" + 
-					"   /   | __/|_            /  |/  /___ _____  / /_  ____ _/ /_/ /_____ _____ \r\n" + 
-					"  / /| ||    /  ______   / /|_/ / __ `/ __ \\/ __ \\/ __ `/ __/ __/ __ `/ __ \\\r\n" + 
-					" / ___ /_ __|  /_____/  / /  / / /_/ / / / / / / / /_/ / /_/ /_/ /_/ / / / /\r\n" + 
-					"/_/  |_||/             /_/  /_/\\__,_/_/ /_/_/ /_/\\__,_/\\__/\\__/\\__,_/_/ /_/ \n";
-		else
-			this.result = "    ___                    ______           ___     __\r\n" + 
-					"   /   | __/|_            / ____/_  _______/ (_)___/ /\r\n" + 
-					"  / /| ||    /  ______   / __/ / / / / ___/ / / __  / \r\n" + 
-					" / ___ /_ __|  /_____/  / /___/ /_/ / /__/ / / /_/ /  \r\n" + 
-					"/_/  |_||/             /_____/\\__,_/\\___/_/_/\\__,_/   \n";
-		
-		if(success)
-		{
-			this.maze.resetGrid();
-			Node<Maze> revertedTree = ((PriorityQueue<Node<Maze>>) this.frontier).remove();
-			
-			revertedTree = revertedTree.getFather();
-			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
-			this.pathLength++;
-			
-			while(revertedTree.hasFather())
-			{
-				Maze temp = revertedTree.getContent();
-				Square state = temp.getCurrState();
-				
-				if(!state.equals(this.maze.getEnd()))
-				{
-					this.result += state.toString() + " <- ";
-					this.maze.getGrid()[state.getLine()][state.getCol()].setAttribute("*");
-					this.pathLength++;
-				}
-				revertedTree = revertedTree.getFather();
-			}
-			
-			this.result += this.maze.getStart().toString() + "(Start) \n" + "Path length: " + this.pathLength + "\nNumber of nodes created: " + this.nodesCounter + "\nExecution time: " + time/1000d + " seconds\n";
-			this.result += this.maze.printMaze();
-		}
-		else
-		{
-			this.result += "Failed : Unable to go further and/or end is unreachable.";
-		}
-	}
 
-	/*
-	 * Returns the result from the last solving
-	 */
 	public String getResult() 
 	{
 		if(this.result == "")
 			return "No resolution computed, use the solve method first";
 		else
 			return this.result;
+	}
+	
+	public AbstractCollection<Node<Maze>> getFrontier() 
+	{
+		return this.frontier;
 	}
 }

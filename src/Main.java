@@ -22,7 +22,7 @@ public class Main
 		//====================
 		//====================
 
-		Maze lab2 = new Maze("./data/lab.txt");
+		Maze lab2 = new Maze("./data/test.txt");
 		
 		//char[] order = {'N', 'W', 'S', 'E'};
 		//lab2.setOrder(order);
@@ -33,17 +33,12 @@ public class Main
 		DFS_Solver d2 = new DFS_Solver(lab2);
 		AStarSolver a2 = new AStarSolver(lab2, true);
 		
-		b2.solve();
-		d2.solve();
-		a2.solve();
-		
-		System.out.println(b2.getResult());
-		System.out.println(d2.getResult());
-		System.out.println(a2.getResult());
+		System.out.println(b2.solve());
+		System.out.println(d2.solve());
+		System.out.println(a2.solve());
 		
 		a2 = new AStarSolver(lab2, false);
 		
-		a2.solve();
-		System.out.println(a2.getResult());
+		System.out.println(a2.solve());
 	}
 }

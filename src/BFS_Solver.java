@@ -1,9 +1,9 @@
+import java.util.AbstractCollection;
 import java.util.Iterator;
 import java.util.LinkedList;
 
 public class BFS_Solver extends Solver
 {
-	
 	/*
 	 * Constructor
 	 * m: Maze to solve
@@ -16,10 +16,7 @@ public class BFS_Solver extends Solver
 		this.closedSquares = new LinkedList<Square>();
 	}
 	
-	/*
-	 * Solves the maze with the Breadth First Search algorithm
-	 */
-	public void solve()
+	public String solve()
 	{
 		Boolean endfound = false;
 		this.nodesCounter = 0;
@@ -85,53 +82,15 @@ public class BFS_Solver extends Solver
 		
 		long endTime = System.currentTimeMillis();
 		
-		this.setResult(endfound, (endTime - startTime));
-	}
-	
-	/*
-	 * Get the next ("walkables") states from the given state
-	 * c: Square from where to get the nexts squares
-	 */
-	public LinkedList<Node<Maze>> getNextSquares()
-	{
-		LinkedList<Node<Maze>> res = new LinkedList<Node<Maze>>();
+		long time = endTime - startTime;
 		
-		//Get 4 next squares
-		LinkedList<Maze> nexts = this.maze.getCurrState().getNexts();
-		
-		for(int i = 0; i < nexts.size(); i++)
-		{
-			Square tempSq = nexts.get(i).getCurrState();
-			if(!this.closedSquares.contains(tempSq))
-			{
-				//this.closedSquares.add(tempSq);
-				//this.maze.getGrid()[tempSq.getLine()][tempSq.getCol()].setAttribute("*");
-				Node<Maze> tempNode = new Node<Maze>(nexts.get(i));
-				res.add(tempNode); //Add the state
-			}
-		}
-		
-		return res;
-	}
-	
-	/*
-	 * Sets the result in this format :
-	 * 	- Path trace
-	 *  - Path length
-	 *  - Number of nodes created
-	 *  - The maze with the path written
-	 *  
-	 *  PRIVATE: This method must be called only at the end of the solve method. Any other call may throw errors.
-	 */
-	private void setResult(boolean success, long time)
-	{
 		this.result = "    ____                      ____  __       _______           __     _____                      __  \r\n" + 
-					"   / __ )________  ____ _____/ / /_/ /_     / ____(_)_________/ /_   / ___/___  ____ ___________/ /_ \r\n" + 
-					"  / __  / ___/ _ \\/ __ `/ __  / __/ __ \\   / /_  / / ___/ ___/ __/   \\__ \\/ _ \\/ __ `/ ___/ ___/ __ \\\r\n" + 
-					" / /_/ / /  /  __/ /_/ / /_/ / /_/ / / /  / __/ / / /  (__  ) /_    ___/ /  __/ /_/ / /  / /__/ / / /\r\n" + 
-					"/_____/_/   \\___/\\__,_/\\__,_/\\__/_/ /_/  /_/   /_/_/  /____/\\__/   /____/\\___/\\__,_/_/   \\___/_/ /_/ \n";
-		
-		if(success)
+				"   / __ )________  ____ _____/ / /_/ /_     / ____(_)_________/ /_   / ___/___  ____ ___________/ /_ \r\n" + 
+				"  / __  / ___/ _ \\/ __ `/ __  / __/ __ \\   / /_  / / ___/ ___/ __/   \\__ \\/ _ \\/ __ `/ ___/ ___/ __ \\\r\n" + 
+				" / /_/ / /  /  __/ /_/ / /_/ / /_/ / / /  / __/ / / /  (__  ) /_    ___/ /  __/ /_/ / /  / /__/ / / /\r\n" + 
+				"/_____/_/   \\___/\\__,_/\\__,_/\\__/_/ /_/  /_/   /_/_/  /____/\\__/   /____/\\___/\\__,_/_/   \\___/_/ /_/ \n";
+	
+		if(endfound)
 		{
 			this.maze.resetGrid();
 			Node<Maze> revertedTree = ((LinkedList<Node<Maze>>) this.frontier).removeLast();
@@ -161,11 +120,32 @@ public class BFS_Solver extends Solver
 		{
 			this.result += "Failed : Unable to go further and/or end is unreachable.";
 		}
+		
+		return this.result;
 	}
 	
-	/*
-	 * Returns the result from the last solving
-	 */
+	public LinkedList<Node<Maze>> getNextSquares()
+	{
+		LinkedList<Node<Maze>> res = new LinkedList<Node<Maze>>();
+		
+		//Get 4 next squares
+		LinkedList<Maze> nexts = this.maze.getCurrState().getNexts();
+		
+		for(int i = 0; i < nexts.size(); i++)
+		{
+			Square tempSq = nexts.get(i).getCurrState();
+			if(!this.closedSquares.contains(tempSq))
+			{
+				//this.closedSquares.add(tempSq);
+				//this.maze.getGrid()[tempSq.getLine()][tempSq.getCol()].setAttribute("*");
+				Node<Maze> tempNode = new Node<Maze>(nexts.get(i));
+				res.add(tempNode); //Add the state
+			}
+		}
+		
+		return res;
+	}
+	
 	public String getResult()
 	{
 		if(result == "")
@@ -174,11 +154,8 @@ public class BFS_Solver extends Solver
 			return this.result;
 	}
 	
-	/*
-	 * Returns the frontier from the last solving
-	 */
-	public LinkedList<Node<Maze>> getFrontier() 
+	public AbstractCollection<Node<Maze>> getFrontier() 
 	{
-		return (LinkedList<Node<Maze>>) this.frontier;
+		return this.frontier;
 	}
 }
