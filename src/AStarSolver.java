@@ -1,65 +1,73 @@
+import java.util.AbstractCollection;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.PriorityQueue;
-import java.util.Queue;
 
-public class AStarSolver
+public class AStarSolver extends Solver
 {
-	private Maze maze;
-	private String result;
-	private Queue<Square> openNodes;
-	private Queue<Node<Square>> dynTreeNodes;
-	private int nodesCounter;
-	private int pathLength;
-	
 	/*
 	 * Constructor
 	 * m: The maze to solve
 	 */
-	public AStarSolver(Maze m)
+	public AStarSolver(Maze m, Boolean manhattan)
 	{
 		this.maze = m;
 		this.result = "";
-		this.openNodes = new PriorityQueue<Square>(new Comparator<Square>()
+		this.manhattan = manhattan; 
+		this.frontier = new PriorityQueue<Node<Maze>>(new Comparator<Node<Maze>>()
 		{
-			public int compare(Square s1, Square s2) 
+			public int compare(Node<Maze> s1, Node<Maze> s2) 
 		    {
-		    	Double cs1 = s1.getF();
-		    	Double cs2 = s2.getF();
+		    	Double sf1 = s1.getContent().getCurrState().getF();
+		    	Double sf2 = s2.getContent().getCurrState().getF();
+		    	Double sh1 = s1.getContent().getCurrState().getH();
+		    	Double sh2 = s2.getContent().getCurrState().getH();
 		    	
-		    	if(cs1 > cs2)
+		    	if(sf1 > sf2)
 		    		return 1;
-		    	else if(cs1 == cs2)
-		    		return 0;
+		    	else if(sf1 == sf2)
+		    	{
+		    		if(sh1 > sh2)
+		    			return 1;
+		    		else if(sh1 == sh2)
+		    			return 0;
+		    		else
+		    			return -1;
+		    	}
 		    	else
 		    		return -1;
 		    }
 		});
-		this.dynTreeNodes = new PriorityQueue<Node<Square>>(new Comparator<Node<Square>>()
+		this.closedSquares = new PriorityQueue<Square>(new Comparator<Square>()
 		{
-			public int compare(Node<Square> s1, Node<Square> s2) 
+			public int compare(Square s1, Square s2) 
 		    {
-		    	Double cs1 = s1.getContent().getF();
-		    	Double cs2 = s2.getContent().getF();
+				Double sf1 = s1.getF();
+		    	Double sf2 = s2.getF();
+		    	Double sh1 = s1.getH();
+		    	Double sh2 = s2.getH();
 		    	
-		    	if(cs1 > cs2)
+		    	if(sf1 > sf2)
 		    		return 1;
-		    	else if(cs1 == cs2)
-		    		return 0;
+		    	else if(sf1 == sf2)
+		    	{
+		    		if(sh1 > sh2)
+		    			return 1;
+		    		else if(sh1 == sh2)
+		    			return 0;
+		    		else
+		    			return -1;
+		    	}
 		    	else
 		    		return -1;
 		    }
 		});
 	}
 	
-	/*
-	 * Solves the maze with the A* algorithm
-	 * manhattan: Set as true to use the MANHATTAN DISTANCE instead of EUCLIDEAN DISTANCE 
-	 */
-	public void solve(boolean manhattan)
+	public String solve()
 	{
-		this.maze.initGrid(); //Re-init maze
+		this.maze.initMaze(); //Re-init maze
 		
 		Boolean endfound = false;
 		this.nodesCounter = 0;
@@ -67,61 +75,63 @@ public class AStarSolver
 		
 		//Compute F value of Starting square
 		if(manhattan)
-			this.maze.getStart().calcManhattanH(this.maze.getEnd());
+			this.maze.getStart().calcManhattanH();
 		else
-			this.maze.getStart().calcEuclidH(this.maze.getEnd());
+			this.maze.getStart().calcEuclidH();
 		
 		this.maze.getStart().calcF();
 		
 		//Init data structures
-		this.openNodes.clear(); //Clear openNodes Queue
-		this.openNodes.offer(maze.getStart()); //Adding the first node (Start node) (G is at 0, Start to Start = 0)
-		this.maze.closedNodes.clear(); //Clear closedNodes
-		
-		//Init Tree nodes
-		this.dynTreeNodes.clear();
-		this.dynTreeNodes.offer(new Node<Square>(this.maze.getStart()));
-		Node<Square> revertedTree = null;
+		this.frontier.clear(); //Clear frontier Queue
+		((PriorityQueue<Node<Maze>>) this.frontier).offer(new Node<Maze>(this.maze)); //Adding the first node (Start node) (G is at 0, Start to Start = 0)
+		this.closedSquares.clear(); //Clear closedSquares
 		
 		//Measure run time
 		long startTime = System.currentTimeMillis();
 		
 		while(!endfound)
 		{
-			if(this.openNodes.isEmpty())
+			if(this.frontier.isEmpty())
 				break;
 			
 			else
 			{
-				Square current = this.openNodes.remove();
+				Node<Maze> current = ((PriorityQueue<Node<Maze>>) this.frontier).remove();
+				this.maze = (Maze) current.getContent();
+				Square currState = this.maze.getCurrState();
 				
-				if(current.getCol() == this.maze.getEnd().getCol() && current.getLine() == this.maze.getEnd().getLine())
+				if(currState.getCol() == this.maze.getEnd().getCol() && currState.getLine() == this.maze.getEnd().getLine())
+				{
+					Node<Maze> temp = new Node<Maze>(this.maze);
+					temp.setFather(current);
+					((PriorityQueue<Node<Maze>>) this.frontier).offer(temp);
 					endfound = true;
+				}
 				
 				else
 				{
-					revertedTree = this.dynTreeNodes.remove();
+					LinkedList<Node<Maze>> nexts = this.getNextSquares();
+					if(!this.closedSquares.contains(currState))
+					{
+						this.closedSquares.add(currState);
+						currState.setAttribute("*");
+					}
 					
-					LinkedList<Square> nexts = this.getNextSquares(current, manhattan);
-					this.maze.closedNodes.add(current);
-					
-				    Iterator<Square> it = nexts.iterator();
-				    while(it.hasNext())
+				    Iterator<Node<Maze>> x = nexts.iterator();
+				    
+				    while(x.hasNext())
 				    {
-				    	Square neighbor = it.next();
+				    	Node<Maze> neighbor = x.next();
 				    	
-				    	if(this.maze.closedNodes.contains(neighbor))
-				    		continue; //Ignore if already evaluated
+				    	if(this.closedSquares.contains(neighbor.getContent().getCurrState()))
+				    		continue;
 				    	else
 				    	{
-				    		if(!this.openNodes.contains(neighbor))
+				    		if(!this.frontier.contains(neighbor))
 				    		{
-				    			this.openNodes.offer(neighbor);
+				    			neighbor.setFather(current);
+				    			((PriorityQueue<Node<Maze>>) this.frontier).offer(neighbor);
 				    			this.nodesCounter++;
-					    		
-					    		Node<Square> temp = new Node<Square>(neighbor);
-					    		temp.setFather(revertedTree);
-					    		this.dynTreeNodes.offer(temp);
 				    		}
 				    	}
 				    }
@@ -130,123 +140,100 @@ public class AStarSolver
 		}
 		long endTime = System.currentTimeMillis();
 		
-		this.setResult(endfound, manhattan, endTime - startTime);
-	}
-	
-	/*
-	 * Sets the result in this format : 
-	 * 	- Path trace
-	 *  - Path length
-	 *  - Number of nodes created
-	 *  - The maze with the path written
-	 *  
-	 *  PRIVATE: This method must be called only at the end of the solve method. Any other call may throw errors.
-	 */
-	private void setResult(boolean success, boolean manhattan, long time)
-	{
-		if(this.maze.unicodeIsTheNewBlack())
-		{
-			if(manhattan)
-				this.result = "    ___                    __  ___            __          __  __            \r\n" + 
-						"   /   | __/|_            /  |/  /___ _____  / /_  ____ _/ /_/ /_____ _____ \r\n" + 
-						"  / /| ||    /  ______   / /|_/ / __ `/ __ \\/ __ \\/ __ `/ __/ __/ __ `/ __ \\\r\n" + 
-						" / ___ /_ __|  /_____/  / /  / / /_/ / / / / / / / /_/ / /_/ /_/ /_/ / / / /\r\n" + 
-						"/_/  |_||/             /_/  /_/\\__,_/_/ /_/_/ /_/\\__,_/\\__/\\__/\\__,_/_/ /_/ \n";
-			else
-				this.result = "    ___                    ______           ___     __\r\n" + 
-						"   /   | __/|_            / ____/_  _______/ (_)___/ /\r\n" + 
-						"  / /| ||    /  ______   / __/ / / / / ___/ / / __  / \r\n" + 
-						" / ___ /_ __|  /_____/  / /___/ /_/ / /__/ / / /_/ /  \r\n" + 
-						"/_/  |_||/             /_____/\\__,_/\\___/_/_/\\__,_/   \n";
-		}
-		else
-		{
-			this.result = "/*********************/\nA* ALGORITHM";
-			if(manhattan)
-				this.result += " - MANHATTAN DISTANCE\n";
-			else
-				this.result += " - EUCLIDEAN DISTANCE\n";
-		}
+		long time = endTime - startTime;
 		
-		if(success)
+		if(this.manhattan)
+			this.result = "    ___                    __  ___            __          __  __            \r\n" + 
+					"   /   | __/|_            /  |/  /___ _____  / /_  ____ _/ /_/ /_____ _____ \r\n" + 
+					"  / /| ||    /  ______   / /|_/ / __ `/ __ \\/ __ \\/ __ `/ __/ __/ __ `/ __ \\\r\n" + 
+					" / ___ /_ __|  /_____/  / /  / / /_/ / / / / / / / /_/ / /_/ /_/ /_/ / / / /\r\n" + 
+					"/_/  |_||/             /_/  /_/\\__,_/_/ /_/_/ /_/\\__,_/\\__/\\__/\\__,_/_/ /_/ \n";
+		else
+			this.result = "    ___                    ______           ___     __\r\n" + 
+					"   /   | __/|_            / ____/_  _______/ (_)___/ /\r\n" + 
+					"  / /| ||    /  ______   / __/ / / / / ___/ / / __  / \r\n" + 
+					" / ___ /_ __|  /_____/  / /___/ /_/ / /__/ / / /_/ /  \r\n" + 
+					"/_/  |_||/             /_____/\\__,_/\\___/_/_/\\__,_/   \n";
+		
+		if(endfound)
 		{
-			Node<Square> revertedTree = this.dynTreeNodes.remove();
-			this.maze.initGrid();
-			
-			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
+			this.maze.resetGrid();
+			Node<Maze> revertedTree = ((PriorityQueue<Node<Maze>>) this.frontier).remove();
 			
 			revertedTree = revertedTree.getFather();
+			this.result += "Path: " + this.maze.getEnd().toString() + "(End) <- ";
 			this.pathLength++;
 			
 			while(revertedTree.hasFather())
 			{
-				if(!revertedTree.getContent().equals(this.maze.getEnd()))
+				Maze temp = revertedTree.getContent();
+				Square state = temp.getCurrState();
+				
+				if(!state.equals(this.maze.getEnd()))
 				{
-					result += revertedTree.getContent().toString() + " <- ";
-					this.maze.getGrid()[revertedTree.getContent().getLine()][revertedTree.getContent().getCol()].setAttribute("*");
+					this.result += state.toString() + " <- ";
+					this.maze.getGrid()[state.getLine()][state.getCol()].setAttribute("*");
 					this.pathLength++;
 				}
 				revertedTree = revertedTree.getFather();
 			}
 			
 			this.result += this.maze.getStart().toString() + "(Start) \n" + "Path length: " + this.pathLength + "\nNumber of nodes created: " + this.nodesCounter + "\nExecution time: " + time/1000d + " seconds\n";
-			this.result += this.maze.toString();
+			this.result += this.maze.printMaze();
 		}
 		else
 		{
 			this.result += "Failed : Unable to go further and/or end is unreachable.";
 		}
+		
+		return this.result;
 	}
 	
 	/*
 	 *  Get the next ("walkables") squares from the given square
 	 *  c: Square from where to get the nexts squares
-	 *  manhattan: If True, the distances computed will use the MANHATTAN DISTANCE instead of EUCLIDEAN DISTANCE
 	 */
-	public LinkedList<Square> getNextSquares(Square c, Boolean manhattan)
+	public LinkedList<Node<Maze>> getNextSquares()
 	{
-		LinkedList<Square> res = new LinkedList<Square>();
+		LinkedList<Node<Maze>> res = new LinkedList<Node<Maze>>();
 		
 		//Get 4 next squares
-		Square[] nextsquares = this.maze.getNexts(c);
+		LinkedList<Maze> nexts = this.maze.getCurrState().getNexts();
 		
-		Square start = this.maze.getStart();
-		Square end = this.maze.getEnd();
+		int gCurrent = this.maze.getCurrState().getG();
 		
-		for(Square s : nextsquares)
+		for(int i = 0; i < nexts.size(); i++)
 		{
-			if(s != null && !s.isWall()) //Check if the square at next position is not null and if it's not a wall
+			Square tempSq = nexts.get(i).getCurrState();
+			if(!this.closedSquares.contains(tempSq))
 			{
-				//Calc G / H / F
-				if(manhattan)
-				{
-					//Manhattan
-					s.calcManhattanG(start);
-					s.calcManhattanH(end);
-				}
+				if(this.manhattan)
+					nexts.get(i).getCurrState().calcManhattanH();
 				else
-				{
-					//Euclid
-					s.calcEuclidG(start);
-					s.calcEuclidH(end);
-				}
+					nexts.get(i).getCurrState().calcEuclidH();
 				
-		    	s.calcF(); //Calc F value
-		    	
-				res.add(s); //Add the square
+				nexts.get(i).getCurrState().incG(gCurrent);
+				
+				nexts.get(i).getCurrState().calcF();
+				
+				Node<Maze> tempNode = new Node<Maze>(nexts.get(i));
+				res.add(tempNode);
 			}
 		}
+		
 		return res;
 	}
 
-	/*
-	 * Returns the result from the last solving
-	 */
 	public String getResult() 
 	{
 		if(this.result == "")
 			return "No resolution computed, use the solve method first";
 		else
 			return this.result;
+	}
+	
+	public AbstractCollection<Node<Maze>> getFrontier() 
+	{
+		return this.frontier;
 	}
 }

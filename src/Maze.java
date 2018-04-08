@@ -1,4 +1,3 @@
-import java.util.LinkedList;
 import java.io.BufferedReader;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -9,12 +8,10 @@ public class Maze
 	private Square[][] grid;
 	private Square start;
 	private Square end;
-	private int lMax;
-	private int cMax;
-	private char[] order = {'N', 'E', 'S', 'W'}; //Shift order in the grid during solving in cardinals
-	LinkedList<Square> closedNodes = new LinkedList<Square>();
-	
-	boolean fancyMode;
+	private Square currState;
+	public int lMax;
+	public int cMax;
+	public char[] order = {'N', 'E', 'S', 'W'}; //Shift order in the grid during solving in cardinals
 	
 	/*
 	 * Constructor with no file
@@ -27,21 +24,24 @@ public class Maze
 	{
 		//Init grid
 		this.grid = new Square[lRange][cRange];
+		//Set max values
+		this.lMax = lRange;
+		this.cMax = cRange;
 		for(int i = 0; i < lRange; i++)
 		{
 			for(int j = 0; j < cRange; j++)
 			{
-				this.getGrid()[i][j] = new Square(i,j," ");
+				this.grid[i][j] = new Square(i,j," ");
 			}
 		}
 		
-		//Set max values
-		this.lMax = lRange;
-		this.cMax = cRange;
+		this.assignMazeToGridSquares();
 		
 		//Create start and end MazeState objects contaning the start and end squares (stated)
-		this.setEnd(end);
-		this.setStart(start);
+		this.end = end;
+		this.start = start;
+		
+		this.currState = this.getStart();
 		//At this point, the grid is and stay the inital Maze unsolved.
 	}
 	
@@ -84,21 +84,35 @@ public class Maze
 						case 'S': this.setStart(new Square(i, j, "S"));
 							break;
 							
-						case 'X': this.getGrid()[i][j] = new Square(i, j, true);
+						case 'X': this.grid[i][j] = new Square(i, j, true);
 							break;
 							
-						default : this.getGrid()[i][j] = new Square(i, j, " ");
+						default : this.grid[i][j] = new Square(i, j, " ");
 							break;
 					}
 				}
 			}
 			
 			file.close();
+			
+			this.assignMazeToGridSquares();
+			
+			this.currState = this.getStart();
 		}
 		catch (FileNotFoundException e) 
 		{
 			e.printStackTrace();
 		}
+	}
+	
+	public Maze(Square[][] grid, Square start, Square end, Square currState, int lMax, int cMax) 
+	{
+		this.grid = grid;
+		this.start = start;
+		this.end = end;
+		this.currState = currState;
+		this.lMax = lMax;
+		this.cMax = cMax;
 	}
 	
 	/*
@@ -116,7 +130,7 @@ public class Maze
 	public void setStart(Square start) 
 	{
 		this.start = start;
-		this.getGrid()[start.getLine()][start.getCol()] = start;
+		this.grid[start.getLine()][start.getCol()] = start;
 	}
 
 	/*
@@ -134,7 +148,7 @@ public class Maze
 	public void setEnd(Square end) 
 	{
 		this.end = end;
-		this.getGrid()[end.getLine()][end.getCol()] = end;
+		this.grid[end.getLine()][end.getCol()] = end;
 	}
 	
 	/*
@@ -144,21 +158,55 @@ public class Maze
 	 */
 	public void setMazeWall(int l, int c)
 	{
-		this.getGrid()[l][c].setWall();
+		this.grid[l][c].setWall();
+	}
+	
+	public Square getCurrState()
+	{
+		return this.currState;
+	}
+	
+	public void setCurrState(Square c)
+	{
+		this.currState = c;
+	}
+	
+	public void setNextState(Square c)
+	{
+		this.grid[this.currState.getLine()][this.currState.getCol()].setAttribute("*");
+		this.currState = c;
+	}
+	
+	public void assignMazeToGridSquares()
+	{
+		for(int i = 0; i < this.lMax; i++)
+		{
+			for(int j = 0; j < this.cMax; j++)
+			{
+				this.grid[i][j].assignMaze(this);
+			}
+		}
 	}
 	
 	/*
 	 * Initiates the maze
 	 */
-	public void initGrid()
+	public void initMaze()
 	{
 		//Init grid
+		this.resetGrid();
+		
+		this.currState = this.getStart();
+	}
+	
+	public void resetGrid()
+	{
 		for(int i = 0; i < this.lMax; i++)
 		{
 			for(int j = 0; j < this.cMax; j++)
 			{
-				if(this.getGrid()[i][j].getAttribute() == "*")
-					this.getGrid()[i][j].setAttribute(" ");
+				if(this.grid[i][j].getAttribute() == "*")
+					this.grid[i][j].setAttribute(" ");
 			}
 		}
 	}
@@ -180,96 +228,8 @@ public class Maze
 	 */
 	public void resetOrder()
 	{
-		char[] no = {'N', 'E', 'S', 'W'}; 
-		this.order = no;
-	}
-	
-	/*
-	 * Returns a Square array containing all the squares next to the given Square in the maze
-	 * c: The origin Square from where to get the next squares
-	 */
-	public Square[] getNexts(Square c)
-	{
-		Square[] nexts = new Square[4];
-		
-		for(int i = 0; i < 4; i++)
-		{
-			switch(this.order[i])
-			{
-				case 'N': nexts[i] = this.getNorth(c);
-					break;
-					
-				case 'E': nexts[i] = this.getEast(c);
-					break;
-					
-				case 'S': nexts[i] = this.getSouth(c);
-					break;
-					
-				case 'W': nexts[i] = this.getWest(c);
-					break;
-			}
-		}
-		return nexts;
-	}
-	
-	/*
-	 * Returns the Square at North from the given Square
-	 * c: The origin Square from where to get the North Square
-	 */
-	public Square getNorth(Square c)
-	{
-		if(c.getLine() - 1 < 0)
-			return null;
-		else
-			return this.getGrid()[c.getLine() - 1][c.getCol()];
-	}
-	
-	/*
-	 * Returns the Square at West from the given Square
-	 * c: The origin Square from where to get the West Square
-	 */
-	public Square getWest(Square c)
-	{
-		if(c.getCol() - 1 < 0)
-			return null;
-		else
-			return this.getGrid()[c.getLine()][c.getCol() - 1];
-	}
-	
-	/*
-	 * Returns the Square at South from the given Square
-	 * c: The origin Square from where to get the South Square
-	 */
-	public Square getSouth(Square c)
-	{
-		if(c.getLine() + 1 == lMax)
-			return null;
-		else
-			return this.getGrid()[c.getLine() + 1][c.getCol()];
-	}
-	
-	/*
-	 * Returns the Square at East from the given Square
-	 * c: The origin Square from where to get the East Square
-	 */
-	public Square getEast(Square c)
-	{
-		if(c.getCol() + 1 == cMax)
-			return null;
-		else
-			return this.getGrid()[c.getLine()][c.getCol() + 1];
-	}
-	
-	/*
-	 * Returns all the closed nodes in a string
-	 */
-	public String printClosedNodes()
-	{
-		String res = "Closed nodes : \n";
-		for(int i = 0; i < this.closedNodes.size(); i++)
-			res += "(" + i + ") " + this.closedNodes.get(i).toString() + "\n";
-		
-		return res;
+		char[] o = {'N', 'E', 'S', 'W'}; 
+		this.order = o;
 	}
 
 	/*
@@ -280,26 +240,15 @@ public class Maze
 		return grid;
 	}
 	
-	/*
-	 * Magical attribute setter...
-	 */
-	public void fancyness(boolean verity)
+	public Maze clone()
 	{
-		this.fancyMode = verity;
-	}
-	
-	/*
-	 * Magical attribute getter...
-	 */
-	public boolean unicodeIsTheNewBlack()
-	{
-		return this.fancyMode;
+		return new Maze(this.grid, this.start, this.end, this.currState, this.lMax, this.cMax);
 	}
 
 	/*
 	 * Get the maze in a unicode box draw format
 	 */
-	public String toString()
+	public String printMaze()
 	{
 		String res = "   ";
 		String res_under = "";
@@ -350,10 +299,10 @@ public class Maze
 			{
 				//Get Squares
 				temp = this.grid[l][c]; // = A -> Current square
-				tempnextcol = this.getEast(temp); // = B -> Square at the right of temp
-				templineunder = this.getSouth(temp); // = C -> Square below temp
+				tempnextcol = temp.getEast(); // = B -> Square at the right of temp
+				templineunder = temp.getSouth(); // = C -> Square below temp
 				if(l < this.lMax - 1 && c < this.cMax - 1)
-					tempdiag = this.getEast(templineunder); // = D -> Square in the temp lower right-hand diagonal
+					tempdiag = templineunder.getEast(); // = D -> Square in the temp lower right-hand diagonal
 				
 				if(c == 0) //First colomn of current line l
 				{
@@ -378,7 +327,16 @@ public class Maze
 				}
 				else
 				{
-					res += " " + temp.getAttribute() + " ";
+					if(temp.getLine() == this.currState.getLine() && temp.getCol() == this.currState.getCol())
+						res += " o ";
+					else if (temp.getLine() == this.start.getLine() && temp.getCol() == this.start.getCol())
+						res += " S ";
+					else if (temp.getLine() == this.end.getLine() && temp.getCol() == this.end.getCol())
+						res += " E ";
+					else
+						res += " " + temp.getAttribute() + " ";
+					
+					
 					if(l < this.lMax - 1)
 					{
 						if(templineunder.isWall())
@@ -466,7 +424,7 @@ public class Maze
 				for(int i = 1; i < this.cMax; i++)
 				{
 					temp = this.getGrid()[l][i - 1];
-					if(this.getEast(temp).isWall() || temp.isWall())
+					if(temp.getEast().isWall() || temp.isWall())
 						res += "═══╧";
 					else
 						res += "════";
@@ -502,5 +460,10 @@ public class Maze
 			res += "\n";
 		}*/
 		return res;
+	}
+	
+	public String toString()
+	{
+		return this.currState.toString();
 	}
 }

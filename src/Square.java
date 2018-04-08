@@ -1,13 +1,15 @@
 import java.lang.Math;
+import java.util.LinkedList;
 
 public class Square
 {
+	private Maze maze;
 	private int l;
 	private int c;
 	private String attribute;
 	private boolean wall;
 	
-	private double g;
+	private int g;
 	private double h;
 	private double f;
 	
@@ -18,8 +20,9 @@ public class Square
 	 * a: Square state
 	 * 		-> S = Start position
 	 * 		-> E = End position
-	 * 		-> [Space] = Playable
+	 * 		-> [Space] = Open
 	 * 		-> * = Closed (when the solving algorithms run through the maze)
+	 * 		-> o = Current position
 	 * 
 	 * -- Note: The wall attribute will be set as false because it can't be a wall.
 	 */
@@ -50,6 +53,11 @@ public class Square
 		this.g = 0;
 		this.h = 0;
 		this.f = 0;
+	}
+	
+	public void assignMaze(Maze m)
+	{
+		this.maze = m;
 	}
 
 	/*
@@ -84,6 +92,102 @@ public class Square
 	public void setCol(int c) 
 	{
 		this.c = c;
+	}
+	
+	/*
+	 * 
+	 * c: The origin Square from where to get the next squares
+	 */
+	public LinkedList<Maze> getNexts()
+	{
+		LinkedList<Maze> nexts = new LinkedList<Maze>();
+		
+		for(int i = 0; i < 4; i++)
+		{
+			Maze tempMaze = this.maze.clone();
+			
+			if(this.maze.order[i] == 'N')
+			{
+				if(this.getNorth() != null && !this.getNorth().isWall())
+				{
+					tempMaze.setNextState(this.getNorth());
+					nexts.push(tempMaze);
+				}
+			}
+			else if (this.maze.order[i] == 'E')
+			{
+				if(this.getEast() != null && !this.getEast().isWall())
+				{
+					tempMaze.setNextState(this.getEast());
+					nexts.push(tempMaze);
+				}
+			}
+			else if (this.maze.order[i] == 'S')
+			{
+				if(this.getSouth() != null && !this.getSouth().isWall())
+				{
+					tempMaze.setNextState(this.getSouth());
+					nexts.push(tempMaze);
+				}
+			}
+			else if (this.maze.order[i] == 'W')
+			{
+				if(this.getWest() != null && !this.getWest().isWall())
+				{
+					tempMaze.setNextState(this.getWest());
+					nexts.push(tempMaze);
+				}
+			}
+		}
+		return nexts;
+	}
+	
+	/*
+	 * Returns the Square at North from the given Square
+	 * c: The origin Square from where to get the North Square
+	 */
+	public Square getNorth()
+	{
+		if(this.l - 1 < 0)
+			return null;
+		else
+			return this.maze.getGrid()[this.l - 1][this.c];
+	}
+	
+	/*
+	 * Returns the Square at West from the given Square
+	 * c: The origin Square from where to get the West Square
+	 */
+	public Square getWest()
+	{
+		if(this.c - 1 < 0)
+			return null;
+		else
+			return this.maze.getGrid()[this.l][this.c - 1];
+	}
+	
+	/*
+	 * Returns the Square at South from the given Square
+	 * c: The origin Square from where to get the South Square
+	 */
+	public Square getSouth()
+	{
+		if(this.l + 1 == this.maze.lMax)
+			return null;
+		else
+			return this.maze.getGrid()[this.l + 1][this.c];
+	}
+	
+	/*
+	 * Returns the Square at East from the given Square
+	 * c: The origin Square from where to get the East Square
+	 */
+	public Square getEast()
+	{
+		if(this.c + 1 == this.maze.cMax)
+			return null;
+		else
+			return this.maze.getGrid()[this.l][this.c + 1];
 	}
 
 	/*
@@ -142,24 +246,22 @@ public class Square
 	 * Computes the H value with the Manhattan distance
 	 * end: The ending Square in the maze
 	 */
-	public void calcManhattanH(Square end) 
+	public void calcManhattanH() 
 	{
-		if(end.getAttribute() == "E")
-			this.h = Math.abs( this.getLine() - end.getLine() ) 
-					 + Math.abs( this.getCol() - end.getCol() );
+		this.h = Math.abs( this.getLine() - this.maze.getEnd().getLine() ) 
+				 + Math.abs( this.getCol() - this.maze.getEnd().getCol() );
 	}
 	
 	/*
 	 * Computes the H value with the Euclidean distance
 	 * end: The ending Square in the maze
 	 */
-	public void calcEuclidH(Square end)
+	public void calcEuclidH()
 	{
-		if(end.getAttribute() == "E")
-			this.h = Math.sqrt(
-						Math.pow( this.getLine() - end.getLine(), 2 ) 
-						+ Math.pow( this.getCol() - end.getCol(), 2 )
-					);
+		this.h = Math.sqrt(
+					Math.pow( this.getLine() - this.maze.getEnd().getLine(), 2 ) 
+					+ Math.pow( this.getCol() - this.maze.getEnd().getCol(), 2 )
+				);
 	}
 	
 	//----------------------
@@ -169,33 +271,17 @@ public class Square
 	/*
 	 * Returns G value
 	 */
-	public double getG() 
+	public int getG() 
 	{
 		return g;
 	}
 	
 	/*
-	 * Computes the G value with the Manhattan distance
-	 * start: The starting Square in the maze
+	 * Increases the G value
 	 */
-	public void calcManhattanG(Square start)
+	public void incG(int prev)
 	{
-		if(start.getAttribute() == "S")
-			this.g = Math.abs( this.getLine() - start.getLine() ) 
-					 + Math.abs( this.getCol() - start.getCol() );
-	}
-	
-	/*
-	 * Computes the G value with the Euclidean distance
-	 * start: The starting Square in the maze
-	 */
-	public void calcEuclidG(Square start)
-	{
-		if(start.getAttribute() == "S")
-			this.g = Math.sqrt( 
-						Math.pow( this.getLine() - start.getLine(), 2 ) 
-						+ Math.pow( this.getCol() - start.getCol(), 2 ) 
-					);
+		this.g = 1 + prev;
 	}
 	
 	//----------------------
