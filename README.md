@@ -26,7 +26,7 @@ Firstly, see how to [load a maze](#load-a-maze) from a .txt file or [create one]
 
 Next, refer to "[Use a solver](#use-a-solver)" to begin solving when your Maze is all set.
 
-Like any solver, you can also [set your own cardinal solving order](#changing-the-solving-cardinal-order) as the default one is North-East-South-West.
+Like any solver, you can also [set your own shift order](#changing-the-shift-order). This program use cardinals as reference and the default one is North-East-South-West.
 
 
 
@@ -125,9 +125,9 @@ Set to `true` to use Manhattan heuristic. Euclidean heuristic otherwhise.
 
 
 
-Changing the solving cardinal order
+Changing the shift order
 ------
-To change the order the solvers will use to test squares, use
+To change the shift order the solvers will use to test squares, use
 ```Java
 char[] order = {'W', 'E', 'N', 'S'};
 myMaze.setOrder(order);
