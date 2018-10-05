@@ -10,10 +10,10 @@ In this implementation, Mazes consists in a matrix of Squares.
 
 Here is the orthogonal reprensentation of a Maze:
 ```
-o---> X [Lines]
+o---> X [Columns]
 |
 v
-Y [Columns]
+Y [Lines]
 ```
 
 
