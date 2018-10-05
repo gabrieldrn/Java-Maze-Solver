@@ -1,4 +1,4 @@
-# Maze_solver
+# Java-Maze-Solver
 This program is a console-based maze solving in Java with BFS, DFS, A*.
 
 
