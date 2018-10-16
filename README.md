@@ -55,7 +55,7 @@ The number of characters in the first line will be the maze number of columns an
 
 Every character is a square of the maze and is read like this:
 * `s` : maze starting point
-* `e` : maze end point
+* `e` : maze ending point
 * `x` : wall
 * Other ones (whatever they are) are empty squares.
 
@@ -65,7 +65,7 @@ Every character is a square of the maze and is read like this:
 
 Create a maze
 ------
-It is also possible to create a maze directly from code by following those steps, but this is the most laborious method.
+It's also possible to create a maze directly from code by following those steps, but this is the most laborious method.
 
 __1. In Main.java, create a starting and a ending square:__
 ```Java
@@ -118,21 +118,22 @@ System.out.println(dfsSolver.solve());
 System.out.println(aStarSolver.solve());
 ```
 
-Note that `AStarSolver` takes one other boolean argument to specifies if you want your maze to be solve by A* with Manhattan or Euclidean heuristic.
+Note that `AStarSolver` takes one other boolean argument to specifies if you want your maze to be solved by A* with Manhattan or Euclidean heuristic.
 
-Set to `true` to use Manhattan heuristic. Euclidean heuristic otherwhise.
+Set to `true` to use Manhattan heuristic. Euclidean heuristic will be used otherwhise.
 
 
 
 
 Changing the shift order
 ------
-To change the shift order the solvers will use to test squares, use
+Shift order is defined with a char vertor of size 4, each letter corresponding to a cardinal
+
+Here's an example to set the order West-East-North-South
 ```Java
 char[] order = {'W', 'E', 'N', 'S'};
 myMaze.setOrder(order);
 ```
-As the exemple shows it, the order is now West-East-North-South
 
 
 
