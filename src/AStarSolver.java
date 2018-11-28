@@ -18,50 +18,50 @@ public class AStarSolver extends Solver
 		this.frontier = new PriorityQueue<Node<Maze>>(new Comparator<Node<Maze>>()
 		{
 			public int compare(Node<Maze> s1, Node<Maze> s2) 
-		    {
-		    	Double sf1 = s1.getContent().getCurrState().getF();
-		    	Double sf2 = s2.getContent().getCurrState().getF();
-		    	Double sh1 = s1.getContent().getCurrState().getH();
-		    	Double sh2 = s2.getContent().getCurrState().getH();
-		    	
-		    	if(sf1 > sf2)
-		    		return 1;
-		    	else if(sf1 == sf2)
 		    	{
-		    		if(sh1 > sh2)
+		    		Double sf1 = s1.getContent().getCurrState().getF();
+		    		Double sf2 = s2.getContent().getCurrState().getF();
+		    		Double sh1 = s1.getContent().getCurrState().getH();
+		    		Double sh2 = s2.getContent().getCurrState().getH();
+		    	
+		    		if(sf1 > sf2)
 		    			return 1;
-		    		else if(sh1 == sh2)
-		    			return 0;
+		    		else if(sf1 == sf2)
+		    		{
+		    			if(sh1 > sh2)
+		    				return 1;
+		    			else if(sh1 == sh2)
+		    				return 0;
+		    			else
+		    				return -1;
+		    		}
 		    		else
 		    			return -1;
 		    	}
-		    	else
-		    		return -1;
-		    }
 		});
 		this.closedSquares = new PriorityQueue<Square>(new Comparator<Square>()
 		{
 			public int compare(Square s1, Square s2) 
-		    {
-				Double sf1 = s1.getF();
-		    	Double sf2 = s2.getF();
-		    	Double sh1 = s1.getH();
-		    	Double sh2 = s2.getH();
-		    	
-		    	if(sf1 > sf2)
-		    		return 1;
-		    	else if(sf1 == sf2)
 		    	{
-		    		if(sh1 > sh2)
+				Double sf1 = s1.getF();
+		    		Double sf2 = s2.getF();
+		    		Double sh1 = s1.getH();
+		    		Double sh2 = s2.getH();
+		    	
+		    		if(sf1 > sf2)
 		    			return 1;
-		    		else if(sh1 == sh2)
-		    			return 0;
+		    		else if(sf1 == sf2)
+		    		{
+		    			if(sh1 > sh2)
+		    				return 1;
+		    			else if(sh1 == sh2)
+		    				return 0;
+		    			else
+		    				return -1;
+		    		}
 		    		else
 		    			return -1;
 		    	}
-		    	else
-		    		return -1;
-		    }
 		});
 	}
 	
@@ -93,7 +93,6 @@ public class AStarSolver extends Solver
 		{
 			if(this.frontier.isEmpty())
 				break;
-			
 			else
 			{
 				Node<Maze> current = ((PriorityQueue<Node<Maze>>) this.frontier).remove();
@@ -117,24 +116,24 @@ public class AStarSolver extends Solver
 						currState.setAttribute("*");
 					}
 					
-				    Iterator<Node<Maze>> x = nexts.iterator();
-				    
-				    while(x.hasNext())
-				    {
-				    	Node<Maze> neighbor = x.next();
-				    	
-				    	if(this.closedSquares.contains(neighbor.getContent().getCurrState()))
-				    		continue;
-				    	else
+					Iterator<Node<Maze>> x = nexts.iterator();
+					
+				    	while(x.hasNext())
 				    	{
-				    		if(!this.frontier.contains(neighbor))
+				    		Node<Maze> neighbor = x.next();
+				    	
+				    		if(this.closedSquares.contains(neighbor.getContent().getCurrState()))
+				    			continue;
+				    		else
 				    		{
-				    			neighbor.setFather(current);
-				    			((PriorityQueue<Node<Maze>>) this.frontier).offer(neighbor);
-				    			this.nodesCounter++;
+				    			if(!this.frontier.contains(neighbor))
+				    			{
+				    				neighbor.setFather(current);
+				    				((PriorityQueue<Node<Maze>>) this.frontier).offer(neighbor);
+				    				this.nodesCounter++;
+				    			}
 				    		}
 				    	}
-				    }
 				}
 			}
 		}
